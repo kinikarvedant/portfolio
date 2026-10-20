@@ -1,0 +1,189 @@
+# The one place to edit. `python build.py` turns this into the website, the project pages,
+# the GitHub profile README, the GitHub repo descriptions and paste-ready LinkedIn text.
+# Words in {braces} are filled from each project's results files, so numbers are never typed by hand.
+
+[person]
+name = "Vedant Basavaraj Kinikar"
+short_name = "Vedant Kinikar"
+title = "Data science and software engineering"
+location = "Melbourne, VIC"
+email = "kinikarvedant@gmail.com"
+github = "kinikarvedant"
+linkedin = "https://www.linkedin.com/in/vedant-kinikar"
+site = "https://vedantkinikar.duckdns.org"
+resume = "/downloads/vedant-kinikar-resume.pdf"   # lives on the server only, not in git
+photo = ""                                        # e.g. "/media/vedant.jpg" once it's uploaded
+open_to = "Open to data, ML and software internships"
+
+[intro]
+lede = "Master of Data Science student at RMIT in Melbourne. I build machine learning and software on messy, real data: city sensor feeds, traffic simulations and factory images. Two software internships taught me React, Node.js and REST APIs."
+about = [
+  "I finished a B.Tech in Computer Science at VIT Vellore and moved to Melbourne for a Master of Data Science at RMIT, alongside an MBA in Finance at NMIMS.",
+  "Two internships taught me the unglamorous half of the job: reading someone else's ERP module before changing it, handling the edge cases nobody wrote down, and asking the questions that stop a feature being built twice.",
+  "My projects are where I go deeper, and I write them up honestly: what worked, what didn't, and how sure I am. My Melbourne foot-traffic study found no measurable Metro Tunnel effect, and it says so.",
+  "I'm looking for a data, machine learning or software internship or part-time role in Melbourne, and I'm building towards a graduate role.",
+]
+glance = [
+  ["Based in", "Melbourne, VIC"],
+  ["Currently", "Master of Data Science, RMIT University"],
+  ["Strongest in", "Python, SQL, pandas, scikit-learn, React, Node.js"],
+  ["Also", "PyTorch, YOLOv8, OpenCV, AWS, Docker"],
+  ["Looking for", "Data, ML and software internships; part-time roles"],
+  ["Certified", "AWS Cloud Practitioner · Google Cloud Digital Leader"],
+]
+
+[[experience]]
+role = "Software / Project Intern"
+org = "SoulSoft Infotech Pvt. Ltd."
+place = "Sangamner, India"
+when = "Oct 2025 – Jan 2026"
+points = [
+  "Worked on web and mobile development in the company's stack: React, Node.js, REST APIs and database tooling.",
+  "Implemented a module-level internal-dashboard feature end to end: requirement analysis, edge-case handling and integration.",
+  "Helped with API and cloud-environment improvements, researching performance-oriented approaches along the way.",
+]
+
+[[experience]]
+role = "Software Engineer Intern"
+org = "AiravataOne Technologies"
+place = "Palghar, India"
+when = "Jul 2025 – Oct 2025"
+points = [
+  "Built ERP modules for manufacturing clients: module design, coding and debugging under senior-developer review.",
+  "Turned dense system requirements into maintainable code, and proposed implementation improvements from my own research.",
+  "Worked across functions to pin down requirements and keep delivery predictable.",
+]
+
+[[education]]
+degree = "Master of Data Science"
+school = "RMIT University · Melbourne, VIC"
+when = "Jul 2026 – Dec 2028"
+
+[[education]]
+degree = "Master of Business Administration (Finance)"
+school = "SVKM's Narsee Monjee Institute of Management Studies (NMIMS) · Mumbai, India · Online"
+when = "2026 – 2028"
+
+[[education]]
+degree = "B.Tech, Computer Science (Core)"
+school = "Vellore Institute of Technology · Vellore, Tamil Nadu, India"
+when = "Sep 2021 – Jul 2025"
+note = "CGPA 8.28 / 10"
+
+[skills]
+"Programming" = ["Python", "SQL", "Java", "JavaScript"]
+"Data and machine learning" = ["pandas", "scikit-learn", "PyTorch", "TensorFlow", "Stable-Baselines3", "YOLOv8", "OpenCV"]
+"Software development" = ["React", "Node.js", "Django", "REST APIs", "Git", "Docker", "Linux"]
+"Databases and cloud" = ["PostgreSQL", "MySQL", "AWS", "Google Cloud"]
+
+[extras]
+certifications = [
+  "AWS Certified Cloud Practitioner · AWS, Feb 2024",
+  "Google Cloud Certified – Cloud Digital Leader · Google, Jan 2024",
+  "CompTIA Security+ (SY0-701) complete course and practice exam · Udemy, Oct 2025",
+]
+leadership = [
+  "Technical mentor (informal peer support), VIT Vellore · 2024–2025",
+  "Team coordinator, academic project collaboration group · 2023–2024",
+]
+
+# ---------------------------------------------------------------- projects
+# show = false hides a project everywhere. order = position on the site.
+# path = local repo; facts are read from its results files by build.py.
+
+[[projects]]
+slug = "melbourne-footfall"
+show = true
+order = 1
+repo = "melbourne-footfall"
+path = 'C:\Data\Projects\melbourne-footfall'
+demo = "copy"            # the repo ships its own interactive demo in demo/
+title = "Melbourne foot traffic: the Metro Tunnel and week-ahead forecasts"
+kicker = "Solo · Oct 2026 · live demo"
+summary = "1.6 million hourly counts from the City of Melbourne's pedestrian sensors, used to test whether the Metro Tunnel changed street-level foot traffic, and to forecast every sensor a week ahead."
+highlights = [
+  "Forecast error of {wape_model}% vs {wape_naive}% for a same-hour-last-week baseline, across {test_sensors} sensors and 8 test weeks.",
+  "No measurable Metro Tunnel effect at the 150 m radius fixed in advance. A triple-counted street corner that faked an 11% effect was caught and fixed before publishing.",
+  "Cleans a feed that silently drops zero-count hours: night gaps are read as zeros, daytime gaps as sensor outages.",
+]
+stack = ["Python", "pandas", "scikit-learn", "Leaflet", "Chart.js"]
+description = "Melbourne pedestrian sensors: did the Metro Tunnel change foot traffic, and a week-ahead forecast per sensor"
+topics = ["data-science", "forecasting", "melbourne", "open-data", "pandas", "scikit-learn"]
+
+[[projects]]
+slug = "smart-traffic-drl"
+show = true
+order = 2
+repo = "smart-traffic-drl"
+path = 'C:\Data\Projects\smart-traffic-drl'
+demo = "page"
+title = "Traffic signals with deep reinforcement learning"
+kicker = "Solo · 2025, re-evaluated Oct 2026"
+summary = "A PPO agent decides which direction gets green at a simulated four-way intersection in SUMO, and is compared fairly with fixed-time signal plans over five seeds."
+highlights = [
+  "Mean wait of {ppo_regular}s per vehicle vs {fixed10_regular}s for the best fixed-time plan, on the traffic pattern it trained on.",
+  "On random arrivals it never saw, it loses ({ppo_random}s vs {fixed10_random}s), and the write-up says so.",
+  "Fixed an action-space bug that had the agent choosing between green and yellow instead of between directions.",
+]
+stack = ["Python", "PyTorch", "Stable-Baselines3", "SUMO", "Gymnasium"]
+images = ["results/figures/ppo_demo.gif", "results/figures/ppo_vs_fixed_time.png", "results/figures/training_curve.png"]
+description = "Deep reinforcement learning (PPO) for traffic signal control in SUMO, evaluated against fixed-time plans"
+topics = ["reinforcement-learning", "sumo", "traffic-signal-control", "stable-baselines3", "pytorch"]
+
+[[projects]]
+slug = "seo-geo-starter"
+show = true
+order = 3
+repo = "seo-geo-starter"
+path = ""
+demo = "none"            # static demos build fine (see notes); not hosted until the repo's wording is settled
+title = "Local-business site starter for search and answer engines"
+kicker = "Solo · Sep 2026 · 6 of 10 milestones"
+summary = "A config-driven Next.js 16 template for local-business websites built to rank in search, surface in featured snippets and voice answers, and be quoted accurately by answer engines. One codebase builds every client from a validated Zod config: routes, sitemap, structured data, brand palette and copy."
+highlights = [
+  "Accessible brand colours from two hex inputs: the shade ramp is built in OKLab, and text shades are binary-searched per hue to pass WCAG contrast.",
+  "Area pages exist only where unique local copy does, and a word-shingle similarity check fails CI on near-duplicates.",
+  "Three fictional Melbourne demos (dental clinic, roaster, plumber) built from config alone, with 257 unit tests and per-client URL checks in CI.",
+]
+stack = ["Next.js 16", "TypeScript", "Zod 4", "Tailwind CSS 4", "Vitest", "Docker", "GitHub Actions"]
+description = ""         # left as it is on GitHub
+topics = []
+
+[[projects]]
+slug = "factory-vision"
+show = true
+order = 4
+repo = "Factory-Vision"
+path = 'C:\Data\Projects\Factory Vision'
+demo = "page"
+title = "Factory Vision: defect detection with YOLOv8"
+kicker = "Solo · 2025"
+summary = "A YOLOv8 detector for scratches and dents, with a Streamlit app for uploads, webcam and a simulated production line. Trained and validated on synthetic images."
+highlights = [
+  "mAP50 of {map50} and mAP50-95 of {map50_95} on {val_images} synthetic validation images, which shows the pipeline works end to end.",
+  "On a few real photos it misses obvious dents, so the next step is training on real defect data such as NEU-DET or MVTec AD.",
+]
+stack = ["Python", "YOLOv8", "OpenCV", "Streamlit"]
+images = ["runs/detect/train3/val_batch0_pred.jpg", "runs/detect/train3/confusion_matrix.png"]
+description = "YOLOv8 scratch and dent detection with a Streamlit app, trained on synthetic images"
+topics = ["computer-vision", "yolov8", "object-detection", "streamlit", "opencv"]
+
+[[projects]]
+slug = "bolt"
+show = false             # hidden until the driver data is removed from the public repo
+order = 5
+repo = "Blockchain-based-route-optimization-and-loan-prediction-platform"
+path = ""
+demo = "none"
+title = "BOLT 2.0: loan model and trip ledger"
+kicker = "VIT · team of 2"
+summary = "A random-forest loan-amount model, a hash-chained ledger of delivery-trip records, and trip-distance calculation."
+highlights = []
+stack = ["Python", "scikit-learn"]
+description = ""
+topics = []
+
+# ---------------------------------------------------------------- LinkedIn (paste-ready)
+[linkedin]
+headline = "Data science student at RMIT building ML on real Melbourne data | Tested the Metro Tunnel's effect on CBD foot traffic with 1.6M sensor counts | Open to data/ML internships and part-time roles"
+about_file = 'C:\Data\Study\RMIT\LinkedIn\drafts\2026-10-20\profile-about.clean.txt'
