@@ -2,18 +2,23 @@
 
     python build.py            build site/ and out/, then run the checks
     python build.py github     also update each repo's description, homepage and topics (needs `gh auth login`)
+    python build.py release    also publish site/ as a zip + checksum on the portfolio repo's latest GitHub release,
+                               which the server's deploy script downloads
 
 site/                      the website: home page, project pages, robots.txt, sitemap.xml
 out/github-profile/        README.md for github.com/kinikarvedant (the profile repo)
 out/linkedin.md            paste-ready LinkedIn sections
 """
 import csv
+import datetime
+import hashlib
 import html
 import re
 import shutil
 import subprocess
 import sys
 import tomllib
+import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).parent
@@ -21,6 +26,7 @@ SITE, OUT = ROOT / "site", ROOT / "out"
 WORDS = ROOT.parent / ".hooks" / "words.txt"  # the owner's list of words never to publish; kept outside git
 BANNED = re.compile(rf"\b({WORDS.read_text(encoding='utf-8').strip()})\b", re.I) if WORDS.exists() else None
 CODE_FILES = re.compile(r"(^README\.md$|^requirements\.txt$|^Dockerfile$|\.py$|\.ya?ml$)")
+GH = shutil.which("gh") or r"C:\Program Files\GitHub CLI\gh.exe"
 e = html.escape
 
 
@@ -332,11 +338,25 @@ def sync_github(c):
     for p in c["projects"]:
         if not p.get("description"):
             continue
-        cmd = ["gh", "repo", "edit", f"{c['person']['github']}/{p['repo']}", "--description", p["description"], "--homepage", p["url"]]
+        cmd = [GH, "repo", "edit", f"{c['person']['github']}/{p['repo']}", "--description", p["description"], "--homepage", p["url"]]
         for t in p["topics"]:
             cmd += ["--add-topic", t]
         subprocess.run(cmd, check=True)
         print("updated", p["repo"])
+
+
+def release(c):
+    """Zip site/, write its SHA-256, and publish both as the portfolio repo's latest release."""
+    z, sha = OUT / "portfolio-site.zip", OUT / "portfolio-site.zip.sha256"
+    with zipfile.ZipFile(z, "w", zipfile.ZIP_DEFLATED) as f:
+        for p in sorted(SITE.rglob("*")):
+            if p.is_file():
+                f.write(p, p.relative_to(SITE).as_posix())
+    sha.write_text(f"{hashlib.sha256(z.read_bytes()).hexdigest()}  portfolio-site.zip\n", encoding="utf-8")
+    tag = "site-" + datetime.datetime.now().strftime("%Y%m%d-%H%M")
+    subprocess.run([GH, "release", "create", tag, str(z), str(sha), "--repo", f"{c['person']['github']}/portfolio",
+                    "--title", tag, "--notes", f"Built site for {c['person']['site']}", "--latest"], check=True)
+    print("released", tag, sha.read_text().split()[0])
 
 
 if __name__ == "__main__":
@@ -347,3 +367,5 @@ if __name__ == "__main__":
         sys.exit(1)
     if sys.argv[1:] == ["github"]:
         sync_github(content)
+    if sys.argv[1:] == ["release"]:
+        release(content)
