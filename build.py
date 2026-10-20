@@ -352,7 +352,7 @@ def release(c):
         for p in sorted(SITE.rglob("*")):
             if p.is_file():
                 f.write(p, p.relative_to(SITE).as_posix())
-    sha.write_text(f"{hashlib.sha256(z.read_bytes()).hexdigest()}  portfolio-site.zip\n", encoding="utf-8")
+    sha.write_text(f"{hashlib.sha256(z.read_bytes()).hexdigest()}  portfolio-site.zip\n", encoding="utf-8", newline="\n")
     tag = "site-" + datetime.datetime.now().strftime("%Y%m%d-%H%M")
     subprocess.run([GH, "release", "create", tag, str(z), str(sha), "--repo", f"{c['person']['github']}/portfolio",
                     "--title", tag, "--notes", f"Built site for {c['person']['site']}", "--latest"], check=True)
