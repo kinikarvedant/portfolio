@@ -16,6 +16,8 @@ photo = ""                                        # e.g. "/media/vedant.jpg" onc
 open_to = "Open to data, ML and software internships"
 
 [intro]
+hero_lead = "Hey!"
+hero = "I'm a Master of Data Science student at RMIT in Melbourne, building machine learning and software on messy, real data."
 lede = "Master of Data Science student at RMIT in Melbourne. I build machine learning and software on messy, real data: city sensor feeds, traffic simulations and factory images. Two software internships taught me React, Node.js and REST APIs."
 about = [
   "I finished a B.Tech in Computer Science at VIT Vellore and moved to Melbourne for a Master of Data Science at RMIT, alongside an MBA in Finance at NMIMS.",
@@ -31,6 +33,41 @@ glance = [
   ["Looking for", "Data, ML and software internships; part-time roles"],
   ["Certified", "AWS Cloud Practitioner · Google Cloud Digital Leader"],
 ]
+
+# handwritten notes and small touches around the site
+[design]
+work_note = "made since 2025"
+story_note = "from Vellore to Melbourne"
+collage_title = "Building things that hold up on real data"
+collage_note = "because messy data is more fun"
+chat_note = "Go on, press the big one =)"
+doodle_note = "real data, real mess"
+stickers = ["Python", "SQL", "pandas", "scikit-learn", "PyTorch", "React"]
+
+# the polaroid strip in the story section
+[[milestones]]
+when = "2021 – 2025"
+title = "VIT Vellore"
+caption = "B.Tech CS, CGPA 8.28"
+color = "#ffe58a"
+
+[[milestones]]
+when = "Jul 2025 – Jan 2026"
+title = "Two internships"
+caption = "React, Node.js and an ERP"
+color = "#c9f0d6"
+
+[[milestones]]
+when = "Jul 2026"
+title = "RMIT, Melbourne"
+caption = "Master of Data Science"
+color = "#cfe8ff"
+
+[[milestones]]
+when = "Oct 2026"
+title = "Metro Tunnel study"
+caption = "1.6M sensor counts"
+color = "#ffd6c2"
 
 [[experience]]
 role = "Software / Project Intern"
@@ -80,7 +117,7 @@ note = "CGPA 8.28 / 10"
 certifications = [
   "AWS Certified Cloud Practitioner · AWS, Feb 2024",
   "Google Cloud Certified – Cloud Digital Leader · Google, Jan 2024",
-  "CompTIA Security+ (SY0-701) complete course and practice exam · Udemy, Oct 2025",
+  "Course: CompTIA Security+ (SY0-701) with practice exam · Udemy, Oct 2025",
 ]
 leadership = [
   "Technical mentor (informal peer support), VIT Vellore · 2024–2025",
@@ -93,6 +130,10 @@ leadership = [
 
 [[projects]]
 slug = "melbourne-footfall"
+short = "Melbourne Footfall"
+glow = "#4cc3ff"
+icon = "pin"
+cards = ["results/forecast_week.png", "results/metro_tunnel_am_peak.png"]
 show = true
 order = 1
 repo = "melbourne-footfall"
@@ -100,9 +141,9 @@ path = 'C:\Data\Projects\melbourne-footfall'
 demo = "copy"            # the repo ships its own interactive demo in demo/
 title = "Melbourne foot traffic: the Metro Tunnel and week-ahead forecasts"
 kicker = "Solo · Oct 2026 · live demo"
-summary = "1.6 million hourly counts from the City of Melbourne's pedestrian sensors, used to test whether the Metro Tunnel changed street-level foot traffic, and to forecast every sensor a week ahead."
+summary = "1.6 million hourly counts from the City of Melbourne's pedestrian sensors, used to test whether the Metro Tunnel changed street-level foot traffic, and to forecast 99 of its sensors a week ahead."
 highlights = [
-  "Forecast error of {wape_model}% vs {wape_naive}% for a same-hour-last-week baseline, across {test_sensors} sensors and 8 test weeks.",
+  "Forecast error of {wape_model}% vs {wape_naive}% for a same-hour-last-week baseline ({wape_4w}% for a 4-week average), across {test_sensors} sensors and 8 test weeks.",
   "No measurable Metro Tunnel effect at the 150 m radius fixed in advance. A triple-counted street corner that faked an 11% effect was caught and fixed before publishing.",
   "Cleans a feed that silently drops zero-count hours: night gaps are read as zeros, daytime gaps as sensor outages.",
 ]
@@ -112,6 +153,10 @@ topics = ["data-science", "forecasting", "melbourne", "open-data", "pandas", "sc
 
 [[projects]]
 slug = "smart-traffic-drl"
+short = "Smart Traffic RL"
+glow = "#5ee08a"
+icon = "signal"
+cards = ["results/figures/ppo_demo.gif", "results/figures/ppo_vs_fixed_time.png"]
 show = true
 order = 2
 repo = "smart-traffic-drl"
@@ -121,17 +166,23 @@ title = "Traffic signals with deep reinforcement learning"
 kicker = "Solo · 2025, re-evaluated Oct 2026"
 summary = "A PPO agent decides which direction gets green at a simulated four-way intersection in SUMO, and is compared fairly with fixed-time signal plans over five seeds."
 highlights = [
-  "Mean wait of {ppo_regular}s per vehicle vs {fixed10_regular}s for the best fixed-time plan, on the traffic pattern it trained on.",
+  "Mean wait of {ppo_regular}s per vehicle vs {fixed10_regular}s for the best of three fixed-time plans tested, on the traffic pattern it trained on.",
   "On random arrivals it never saw, it loses ({ppo_random}s vs {fixed10_random}s), and the write-up says so.",
   "Fixed an action-space bug that had the agent choosing between green and yellow instead of between directions.",
 ]
 stack = ["Python", "PyTorch", "Stable-Baselines3", "SUMO", "Gymnasium"]
 images = ["results/figures/ppo_demo.gif", "results/figures/ppo_vs_fixed_time.png", "results/figures/training_curve.png"]
+image_alts = ["Animation of the PPO agent switching the lights at the simulated intersection", "Bar charts of waiting time, queue length and throughput for PPO and three fixed-time plans", "Training curves: reward and mean waiting time per episode"]
 description = "Deep reinforcement learning (PPO) for traffic signal control in SUMO, evaluated against fixed-time plans"
 topics = ["reinforcement-learning", "sumo", "traffic-signal-control", "stable-baselines3", "pytorch"]
 
 [[projects]]
 slug = "seo-geo-starter"
+short = "Site Starter"
+glow = "#f5c518"
+icon = "layout"
+cards = []
+tiles = ["Dental clinic", "Coffee roaster", "Plumber"]  # the three demo businesses built from config
 show = true
 order = 3
 repo = "seo-geo-starter"
@@ -139,7 +190,7 @@ path = ""
 demo = "none"            # static demos build fine (see notes); not hosted until the repo's wording is settled
 title = "Local-business site starter for search and answer engines"
 kicker = "Solo · Sep 2026 · 6 of 10 milestones"
-summary = "A config-driven Next.js 16 template for local-business websites built to rank in search, surface in featured snippets and voice answers, and be quoted accurately by answer engines. One codebase builds every client from a validated Zod config: routes, sitemap, structured data, brand palette and copy."
+summary = "A config-driven Next.js 16 template for local-business websites, optimised for search, featured snippets, voice answers and answer-engine citation. One codebase builds every client from a validated Zod config: routes, sitemap, structured data, brand palette and copy."
 highlights = [
   "Accessible brand colours from two hex inputs: the shade ramp is built in OKLab, and text shades are binary-searched per hue to pass WCAG contrast.",
   "Area pages exist only where unique local copy does, and a word-shingle similarity check fails CI on near-duplicates.",
@@ -151,6 +202,10 @@ topics = []
 
 [[projects]]
 slug = "factory-vision"
+short = "Factory Vision"
+glow = "#ff8a4c"
+icon = "scan"
+cards = ["runs/detect/train3/val_batch0_pred.jpg", "runs/detect/train3/confusion_matrix.png"]
 show = true
 order = 4
 repo = "Factory-Vision"
@@ -165,11 +220,16 @@ highlights = [
 ]
 stack = ["Python", "YOLOv8", "OpenCV", "Streamlit"]
 images = ["runs/detect/train3/val_batch0_pred.jpg", "runs/detect/train3/confusion_matrix.png"]
+image_alts = ["Validation images with predicted scratch and dent boxes", "Confusion matrix for the scratch and dent classes"]
 description = "YOLOv8 scratch and dent detection with a Streamlit app, trained on synthetic images"
 topics = ["computer-vision", "yolov8", "object-detection", "streamlit", "opencv"]
 
 [[projects]]
 slug = "bolt"
+short = "BOLT 2.0"
+glow = "#c8b6ff"
+icon = "layout"
+cards = []
 show = false             # hidden until the driver data is removed from the public repo
 order = 5
 repo = "Blockchain-based-route-optimization-and-loan-prediction-platform"

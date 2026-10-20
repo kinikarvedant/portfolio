@@ -40,7 +40,7 @@ def rows(path):
 
 def facts_melbourne(p):
     m = {r["method"]: r for r in rows(p / "results/forecast_metrics.csv")}
-    return {"wape_model": m["gradient boosting"]["wape_pct"], "wape_naive": m["same hour last week"]["wape_pct"],
+    return {"wape_model": m["gradient boosting"]["wape_pct"], "wape_naive": m["same hour last week"]["wape_pct"], "wape_4w": m["average of last 4 weeks"]["wape_pct"],
             "test_sensors": len(rows(p / "results/forecast_by_sensor.csv"))}
 
 
@@ -83,16 +83,75 @@ def load():
     return c
 
 
+# ------------------------------------------------------------------ assets and icons
+
+ASSETS = {}  # (source, folder) -> site-relative path
+
+
+def shrink(src, max_w=1400):
+    """PNG/JPEG wider than max_w are resized for the web; everything else is published as is."""
+    data = src.read_bytes()
+    if src.suffix.lower() not in (".png", ".jpg", ".jpeg"):
+        return data
+    from io import BytesIO
+    from PIL import Image
+    im = Image.open(BytesIO(data))
+    if im.width <= max_w:
+        return data
+    im = im.resize((max_w, round(im.height * max_w / im.width)), Image.LANCZOS)
+    out = BytesIO()
+    im.save(out, "JPEG" if src.suffix.lower() in (".jpg", ".jpeg") else "PNG", optimize=True, **({"quality": 85} if src.suffix.lower() in (".jpg", ".jpeg") else {}))
+    return out.getvalue()
+
+
+def asset(src, folder):
+    """Copy a file into site/<folder>/ under a content-hashed name. nginx caches css, js and images for a year
+    as immutable, so a changed file must get a new name to reach returning visitors."""
+    src = Path(src)
+    key = (str(src), folder)
+    if key not in ASSETS:
+        data = shrink(src)
+        name = f"{src.stem}.{hashlib.sha256(data).hexdigest()[:10]}{src.suffix}"
+        (SITE / folder).mkdir(parents=True, exist_ok=True)
+        (SITE / folder / name).write_bytes(data)
+        ASSETS[key] = f"{folder}/{name}"
+    return ASSETS[key]
+
+
+ICONS = {  # 24 px line icons drawn with currentColor
+    "pin": '<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/>',
+    "signal": '<rect x="8" y="2.5" width="8" height="19" rx="3"/><circle cx="12" cy="7.5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="16.5" r="1.5"/>',
+    "layout": '<rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 9h18M9 9v11"/>',
+    "scan": '<path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16M8 12h8"/>',
+    "arrow": '<path d="M4 12h15M13 6l6 6-6 6"/>',
+    "plane": '<path d="M21 3 10 14M21 3l-7 18-4-7-7-4z"/>',
+    "code": '<path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/>',
+    "doc": '<path d="M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h6"/>',
+    "cursor": '<path d="M5 3l14 7-6 2-2 6z"/>',
+}
+
+
+def icon(name, cls=""):
+    return (f'<svg class="{cls}" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" '
+            f'stroke-linecap="round" stroke-linejoin="round">{ICONS[name]}</svg>')
+
+
+def chips(items):
+    return '<ul class="chips">' + "".join(f"<li>{e(i)}</li>" for i in items) + "</ul>"
+
+
 # ------------------------------------------------------------------ html
 
 
-def layout(c, title, desc, path, body, depth):
+def layout(c, title, desc, path, body, depth, active=""):
     up = "../" * depth
-    person = c["person"]
-    nav = "".join(f'<li><a href="{"" if depth == 0 else up}#{k}">{k.title()}</a></li>' for k in ("about", "experience", "projects", "skills", "education", "contact"))
-    url = person["site"] + "/" + path
+    base = up if depth else ""
+    p = c["person"]
+    url = p["site"] + "/" + path
+    nav = "".join(f'<li><a href="{base}#{k}" data-sec="{k}"{" class=\"on\"" if k == active else ""}>{v}</a></li>'
+                  for k, v in (("hey", "Hey"), ("work", "Work"), ("story", "Story"), ("chat", "Chat")))
     return f"""<!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -103,127 +162,204 @@ def layout(c, title, desc, path, body, depth):
 <meta property="og:type" content="website" />
 <meta property="og:url" content="{url}" />
 <meta name="twitter:card" content="summary" />
+<meta name="theme-color" content="#ffffff" />
 <link rel="canonical" href="{url}" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>V</text></svg>" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='50' fill='%23111'/><text x='50' y='64' font-size='42' text-anchor='middle' fill='%23f5c518' font-family='Arial'>VK</text></svg>" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="{up}static/style.css" />
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="{up}{c['_css']}" />
+<script>document.documentElement.classList.add("js")</script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<header>
-  <nav class="wrap nav" aria-label="Main">
-    <a class="brand" href="{up or './'}#top">{e(person['short_name'].split()[0])} <span>{e(person['short_name'].split()[-1])}</span></a>
-    <ul>{nav}</ul>
-    <button class="themebtn" id="theme" type="button" aria-label="Toggle colour theme">&#9681;</button>
-  </nav>
-</header>
+<div class="topblur" aria-hidden="true"></div>
+<nav class="nav" aria-label="Main">
+  <ul>
+    <li class="pill" aria-hidden="true"></li>
+    <li><a class="mark" href="{base}#hey" aria-label="Back to the top">VK</a></li>
+    {nav}
+  </ul>
+</nav>
 <main id="main">
 {body}
 </main>
-<footer class="wrap">
-  <span>&copy; <span id="yr">2026</span> {e(person['name'])} &middot; {e(person['location'])}</span>
-  <span><a href="https://github.com/{person['github']}" rel="me noopener">GitHub</a> &middot; <a href="{person['linkedin']}" rel="me noopener">LinkedIn</a></span>
-</footer>
-<script src="{up}static/site.js"></script>
+<footer>&copy; <span id="yr">2026</span> {e(p['name'])} &middot; {e(p['location'])}</footer>
+<script src="{up}{c['_js']}" defer></script>
 </body>
 </html>
 """
 
 
-def chips(items):
-    return '<ul class="chips">' + "".join(f"<li>{e(i)}</li>" for i in items) + "</ul>"
+DOODLE = """<svg class="doodle" viewBox="0 0 420 240" aria-hidden="true">
+  <path class="d1" d="M12 206 C 38 196, 52 158, 78 166 S 118 196, 140 158 S 172 96, 198 116 S 238 156, 262 104 S 298 46, 328 56"/>
+  <path class="d2" d="M354 52 C 354 30, 308 26, 304 52 C 300 78, 354 82, 356 54 C 357 42, 343 31, 327 34"/>
+  <path class="d3" d="M286 168 C 306 150, 318 124, 322 92 M311 103 L322 89 L334 103"/>
+  <text x="6" y="44">{note}</text>
+</svg>"""
+
+# where the skill stickers sit in their tile: (left %, top %, rotation)
+STICKER_SPOTS = [(4, 6, -8), (46, 2, 6), (18, 34, 4), (58, 38, -7), (2, 66, 7), (40, 70, -4)]
+
+# collage tile placement on wide screens: (css position, width px, rotation, parallax speed)
+COLLAGE_SPOTS = [
+    ("left:-3%;top:4%", 400, -6, .6), ("left:30%;top:-2%", 250, -4, -.3), ("right:-4%;top:3%", 380, 5, -.5),
+    ("left:-2%;top:40%", 270, 4, -.6), ("right:-3%;top:36%", 360, 7, .8), ("left:2%;top:62%", 420, -5, .5),
+    ("right:1%;top:66%", 270, -6, -.4), ("left:36%;top:74%", 330, 3, .35), ("left:62%;top:-1%", 240, 6, .4),
+    ("left:58%;top:70%", 250, -3, -.35),
+]
+
+
+def hero(c):
+    p, intro, d = c["person"], c["intro"], c["design"]
+    letters = "".join('<span class="sp"></span>' if ch == " " else f'<span class="ch" style="--i:{i}">{e(ch)}</span>'
+                      for i, ch in enumerate(p["short_name"]))
+    return f"""<section class="hero" id="hey" data-spy="hey">
+  <div class="wrap">
+    <p class="status"><span class="dot" aria-hidden="true"></span>{e(p['open_to'])}</p>
+    <p class="intro"><b>{e(intro['hero_lead'])}</b> {e(intro['hero'])}</p>
+    <div class="name">
+      {DOODLE.format(note=e(d['doodle_note']))}
+      <h1 aria-label="{e(p['name'])}"><span aria-hidden="true">{letters}</span></h1>
+    </div>
+  </div>
+</section>"""
 
 
 def project_card(p):
-    btns = []
-    if p["page"]:
-        btns.append(f'<a class="btn primary" href="{p["page"]}">{"Live demo" if p["demo"] == "copy" else "Project page"}</a>')
-    btns.append(f'<a class="btn" href="{p["source"]}" rel="noopener">Source</a>')
-    pts = "".join(f"<li>{e(h)}</li>" for h in p["highlights"])
-    return f"""<article class="card">
-  <p class="kicker">{e(p['kicker'])}</p>
-  <h3>{e(p['title'])}</h3>
-  <p>{e(p['summary'])}</p>
-  {f'<ul class="body">{pts}</ul>' if pts else ''}
-  {chips(p['stack'])}
-  <div class="cta">{''.join(btns)}</div>
-</article>"""
+    href = p["page"] or p["source"]
+    imgs = [asset(Path(p["path"]) / s, f"projects/{p['slug']}/img") for s in p.get("cards", [])]
+    if imgs:
+        shots = f'<div class="shots{" one" if len(imgs) == 1 else ""}">' + "".join(
+            f'<figure><img src="{u}" alt="" loading="lazy" /></figure>' for u in imgs) + "</div>"
+    elif p.get("tiles"):
+        shots = '<div class="shots tiles">' + "".join(
+            f'<figure><span class="t-label">Demo site</span><span class="t-name">{e(t)}</span></figure>' for t in p["tiles"]) + "</div>"
+    else:
+        shots = ""
+    fact = f'<p class="fact">{e(p["highlights"][0])}</p>' if p["highlights"] else ""
+    return f"""<a class="pcard" href="{href}"{'' if p['page'] else ' rel="noopener"'} style="--tint:{p['glow']}" data-reveal>
+  <div class="top"><span class="logo">{icon(p['icon'])}</span><div><h3>{e(p['short'])}</h3><p class="kick">{e(p['kicker'])}</p></div>{icon('arrow', 'arrow')}</div>
+  <p class="desc">{e(p['summary'])}</p>
+  {fact}
+  {shots}
+</a>"""
 
 
-def timeline(items, title_key, where_key):
-    out = []
-    for i in items:
-        pts = "".join(f"<li>{e(x)}</li>" for x in i.get("points", []) + ([i["note"]] if i.get("note") else []))
-        out.append(f"""<li><p class="when">{e(i['when'])}</p><h3>{e(i[title_key])}</h3><p class="where">{e(i[where_key])}</p>{f'<ul>{pts}</ul>' if pts else ''}</li>""")
-    return '<ul class="tl">' + "".join(out) + "</ul>"
+def story(c):
+    intro, d = c["intro"], c["design"]
+    text = "".join(f"<p>{e(t)}</p>" for t in intro["about"])
+    pol = "".join(f"""<figure class="polaroid" style="--r:{r}deg;--bgc:{m['color']}"><div class="ph"><span class="yr">{e(m['when'])}</span><span class="big">{e(m['title'])}</span></div><figcaption class="cap">{e(m['caption'])}</figcaption></figure>"""
+                  for m, r in zip(c["milestones"], [-4, 3, -2, 4, -3, 2]))
+    stickers = "".join(f'<span class="sticker" style="left:{x}%;top:{y}%;--r:{r}deg">{e(s)}</span>'
+                       for s, (x, y, r) in zip(d["stickers"], STICKER_SPOTS))
+    exp = "".join(f"""<li><p class="when">{e(x['when'])}</p><p class="role">{e(x['role'])}</p><p class="org">{e(x['org'])} · {e(x['place'])}</p><ul>{''.join(f'<li>{e(t)}</li>' for t in x['points'][:2])}</ul></li>"""
+                  for x in c["experience"])
+    edu = "".join(f"<li><b>{e(x['degree'])}</b><br />{e(x['school'])} · {e(x['when'])}{' · ' + e(x['note']) if x.get('note') else ''}</li>" for x in c["education"])
+    extras = "".join(f"<li>{e(x)}</li>" for x in c["extras"]["certifications"] + c["extras"]["leadership"])
+    return f"""<section id="story" data-spy="story">
+  <div class="wrap">
+    <div class="sec-head" data-reveal><span class="hand">{e(d['story_note'])}</span><h2>My story so far</h2></div>
+    <div class="bento">
+      <div class="tile text" data-reveal>{text}</div>
+      <div class="tile reel" data-reveal style="--d:80ms" role="group" aria-label="Milestones"><div class="track"><div class="set">{pol}</div><div class="set" aria-hidden="true">{pol}</div></div></div>
+      <div class="tile stickers" data-reveal role="img" aria-label="Tools I use most: {e(', '.join(d['stickers']))}"><div class="stack">{stickers}{icon('cursor', 'cursor')}<span class="sig">{e(c['person']['short_name'].split()[0])}</span></div></div>
+      <div class="tile" data-reveal style="--d:80ms"><p class="label">Experience</p><ul class="tl">{exp}</ul></div>
+      <div class="tile" data-reveal><p class="label">Education</p><ul class="plain">{edu}</ul></div>
+      <div class="tile" data-reveal style="--d:80ms"><p class="label">Certifications, courses and leadership</p><ul class="plain">{extras}</ul></div>
+    </div>
+  </div>
+</section>"""
 
 
-def section(n, sid, title, inner):
-    return f'<section id="{sid}"><div class="wrap"><div class="sec-h"><span class="num">{n:02d}</span><h2>{title}</h2></div>{inner}</div></section>'
+def collage(c):
+    d = c["design"]
+    pool = [(p, s) for rank in (0, 1) for p in c["projects"] for s in p.get("cards", [])[rank:rank + 1]]  # first image of each project, then second ones
+    imgs = [(asset(Path(p["path"]) / s, f"projects/{p['slug']}/img"), p["title"]) for p, s in pool[:6]]
+    words = list(c["skills"].items())[:4]
+    items = []
+    for i, (img, title) in enumerate(imgs):
+        items.append(f'<figure class="ctile"><img src="{img}" alt="" loading="lazy" /></figure>')
+        if i < len(words):
+            k, v = words[i]
+            items.append(f'<div class="ctile words"><b>{e(k)}</b><span>{e(", ".join(v))}</span></div>')
+    tiles = []
+    for t, (pos, w, r, speed) in zip(items, COLLAGE_SPOTS):
+        tag_end = t.index(">")
+        tiles.append(t[:tag_end] + f' style="{pos};--w:{w}px;--r:{r}deg" data-speed="{speed}"' + t[tag_end:])
+    return f"""<section class="collage" aria-labelledby="quest" data-spy="story">
+  <div class="center" data-reveal><h2 id="quest">{e(d['collage_title'])}</h2><span class="hand sub">{e(d['collage_note'])}</span></div>
+  <div class="field">{''.join(tiles)}</div>
+</section>"""
+
+
+def chat(c):
+    p, d = c["person"], c["design"]
+    return f"""<section class="chat" id="chat" data-spy="chat" aria-labelledby="chat-h">
+  <div class="wrap">
+    <h2 class="sr" id="chat-h">Get in touch</h2>
+    <span class="hand">{e(d['chat_note'])}</span><br />
+    <a class="connect" href="mailto:{p['email']}">Connect</a>
+    <div class="contactbar" data-reveal>
+      <a class="mail" href="mailto:{p['email']}">{icon('plane')}{e(p['email'])}</a>
+      <ul class="socials">
+        <li><a href="https://github.com/{p['github']}" rel="me noopener" aria-label="GitHub" data-tip="GitHub">{icon('code')}</a></li>
+        <li><a href="{p['linkedin']}" rel="me noopener" aria-label="LinkedIn" data-tip="LinkedIn"><b class="in">in</b></a></li>
+        <li><a href="{p['resume']}" aria-label="Résumé (PDF)" data-tip="Résumé">{icon('doc')}</a></li>
+      </ul>
+    </div>
+  </div>
+</section>"""
 
 
 def home(c):
     p, intro = c["person"], c["intro"]
-    for x in c["experience"]:
-        x["where"] = f"{x['org']} · {x['place']}"
-    portrait = f'<img src="{e(p["photo"])}" alt="{e(p["name"])}" />' if p["photo"] else '<span class="initials">VK</span>'
-    hero = f"""<div class="wrap hero" id="top">
-  <div>
-    <p class="eyebrow"><span class="dot" aria-hidden="true"></span> {e(p['open_to'])}</p>
-    <h1>{e(p['name'])}</h1>
-    <p class="lede">{e(intro['lede'])}</p>
-    <div class="cta">
-      <a class="btn primary" href="mailto:{p['email']}">Email me</a>
-      <a class="btn" href="{p['resume']}">R&eacute;sum&eacute; (PDF)</a>
-      <a class="btn" href="https://github.com/{p['github']}" rel="me noopener">GitHub</a>
-      <a class="btn" href="{p['linkedin']}" rel="me noopener">LinkedIn</a>
-    </div>
+    work = f"""<section id="work" data-spy="work">
+  <div class="wrap">
+    <div class="sec-head" data-reveal><span class="hand">{e(c['design']['work_note'])}</span><h2>Things I've built</h2></div>
+    <div class="projects">{''.join(project_card(x) for x in c['projects'])}</div>
   </div>
-  <div class="portrait">{portrait}</div>
-</div>"""
-    about = '<div class="grid cols-2"><div>' + "".join(f'<p class="muted">{e(t)}</p>' for t in intro["about"]) + '</div><div class="card glance"><h3>At a glance</h3>' + "".join(f"<p><strong>{e(k)}</strong> {e(v)}</p>" for k, v in intro["glance"]) + "</div></div>"
-    projects = '<div class="grid cols-2">' + "".join(project_card(x) for x in c["projects"]) + f'<article class="card"><h3>More on GitHub</h3><p>Source for everything above, plus smaller experiments.</p><div class="cta"><a class="btn" href="https://github.com/{p["github"]}" rel="me noopener">github.com/{p["github"]}</a></div></article></div>'
-    skills = '<div class="grid cols-2">' + "".join(f'<div class="card"><h3>{e(k)}</h3>{chips(v)}</div>' for k, v in c["skills"].items()) + "</div>"
-    ex = c["extras"]
-    extras = f'<div class="grid cols-2"><div class="card"><h3>Certifications</h3><ul class="body">{"".join(f"<li>{e(x)}</li>" for x in ex["certifications"])}</ul></div><div class="card"><h3>Leadership</h3><ul class="body">{"".join(f"<li>{e(x)}</li>" for x in ex["leadership"])}</ul></div></div>'
-    contact = f"""<div class="contact"><div><h3>Let's talk</h3><p class="muted">{e(p['open_to'])}, in Melbourne. Email is the fastest way to reach me.</p>
-<ul class="links"><li><a class="btn" href="mailto:{p['email']}">{e(p['email'])}</a></li><li><a class="btn" href="https://github.com/{p['github']}" rel="me noopener">GitHub</a></li><li><a class="btn" href="{p['linkedin']}" rel="me noopener">LinkedIn</a></li></ul></div>
-<a class="btn primary" href="{p['resume']}">Download r&eacute;sum&eacute;</a></div>"""
-    body = hero + section(1, "about", "About", about) + section(2, "experience", "Experience", timeline(c["experience"], "role", "where")) \
-        + section(3, "projects", "Selected projects", projects) + section(4, "skills", "Skills", skills) \
-        + section(5, "education", "Education", timeline(c["education"], "degree", "school")) \
-        + section(6, "certifications", "Certifications &amp; leadership", extras) + section(7, "contact", "Contact", contact)
+</section>"""
+    body = hero(c) + work + story(c) + collage(c) + chat(c)
     desc = f"{p['name']}: {intro['lede']}"
-    return layout(c, f"{p['name']} | {p['title'].capitalize()}", desc[:300], "", body, 0)
+    return layout(c, f"{p['name']} | {p['title'].capitalize()}", desc[:300], "", body, 0, active="hey")
 
 
 def project_page(c, p, dest):
-    src = Path(p["path"])
-    (dest / "img").mkdir(parents=True, exist_ok=True)
-    figs = []
-    for rel in p.get("images", []):
-        shutil.copy2(src / rel, dest / "img" / Path(rel).name)
-        figs.append(f'<figure><img src="img/{Path(rel).name}" alt="{e(Path(rel).stem.replace("_", " "))}" loading="lazy" /><figcaption>{e(rel)}</figcaption></figure>')
+    src, up = Path(p["path"]), "../../"
+    alts = p.get("image_alts", [])
+    figs = "".join(f'<figure><img src="{up}{asset(src / rel, "projects/" + p["slug"] + "/img")}" alt="{e(alts[i] if i < len(alts) else Path(rel).stem.replace("_", " "))}" loading="lazy" /><figcaption>{e(rel)}</figcaption></figure>'
+                   for i, rel in enumerate(p.get("images", [])))
     table = ""
     if "table" in p["facts"]:
         head, body, note = p["facts"]["table"]
         th = "".join(f'<th{" class=\"num\"" if i else ""}>{e(h)}</th>' for i, h in enumerate(head))
         tr = "".join("<tr>" + "".join(f'<td{" class=\"num\"" if i else ""}>{e(v)}</td>' for i, v in enumerate(r)) + "</tr>" for r in body)
-        table = f'<h2>Results</h2><div class="tablewrap"><table><thead><tr>{th}</tr></thead><tbody>{tr}</tbody></table></div><p class="muted">{e(note)}</p>'
+        table = f'<h2 class="small">Results</h2><div class="tablewrap"><table><thead><tr>{th}</tr></thead><tbody>{tr}</tbody></table></div><p class="note">{e(note)}</p>'
     tracked = subprocess.run(["git", "-C", str(src), "ls-files", "-co", "--exclude-standard"], capture_output=True, text=True).stdout.split("\n")
     files = sorted(f for f in tracked if f and Path(f).name != "__init__.py" and (CODE_FILES.search(Path(f).name) and f.count("/") <= 1 or f.startswith("results/") and f.endswith(".csv")))
     links = "".join(f'<li><a href="{p["source"]}/blob/{p["branch"]}/{f}" rel="noopener">{e(f)}</a></li>' for f in files[:16])
     pts = "".join(f"<li>{e(h)}</li>" for h in p["highlights"])
-    body = f"""<div class="wrap">
-  <p class="crumbs"><a href="../../#projects">&larr; All projects</a></p>
-  <div class="phead"><p class="kicker">{e(p['kicker'])}</p><h1>{e(p['title'])}</h1><p class="lede muted">{e(p['summary'])}</p>
-    <div class="cta"><a class="btn primary" href="{p['source']}" rel="noopener">Source on GitHub</a><a class="btn" href="{p['source']}#readme" rel="noopener">Full write-up</a></div></div>
-  <div class="grid cols-2"><div class="card"><h3>What it shows</h3><ul class="body">{pts}</ul>{chips(p['stack'])}</div><div class="card"><h3>Files</h3><ul class="files">{links}</ul></div></div>
-  <section>{table}<div class="grid cols-2">{''.join(figs)}</div></section>
-</div>"""
-    (dest / "index.html").write_text(layout(c, f"{p['title']} | {c['person']['short_name']}", p["summary"], p["page"], body, 2), encoding="utf-8")
+    body = f"""<header class="phero" style="--tint:{p['glow']}">
+  <div class="wrap">
+    <p class="crumbs"><a href="{up}#work">&larr; All projects</a></p>
+    <p class="kicker">{e(p['kicker'])}</p>
+    <h1>{e(p['title'])}</h1>
+    <p class="lede">{e(p['summary'])}</p>
+    <div class="btns"><a class="btn dark" href="{p['source']}" rel="noopener">Source on GitHub</a><a class="btn" href="{p['source']}#readme" rel="noopener">Full write-up</a></div>
+  </div>
+</header>
+<section class="pbody">
+  <div class="wrap">
+    <div class="pgrid">
+      <div class="tile" data-reveal><h2>What it shows</h2><ul class="body">{pts}</ul>{chips(p['stack'])}</div>
+      <div class="tile" data-reveal style="--d:80ms"><h2>Files</h2><ul class="files">{links}</ul></div>
+    </div>
+    <div class="presults">{table}<div class="figs">{figs}</div></div>
+  </div>
+</section>"""
+    dest.mkdir(parents=True, exist_ok=True)
+    (dest / "index.html").write_text(layout(c, f"{p['title']} | {c['person']['short_name']}", p["summary"], p["page"], body, 2, active="work"), encoding="utf-8")
 
 
 # ------------------------------------------------------------------ other platforms
@@ -299,13 +435,16 @@ def sitemap(c):
 
 def build():
     c = load()
-    shutil.rmtree(SITE, ignore_errors=True)
-    shutil.copytree(ROOT / "static", SITE / "static")
+    SITE.mkdir(exist_ok=True)
+    for old in SITE.iterdir():  # empty it rather than delete it: a local preview server may be running inside
+        shutil.rmtree(old) if old.is_dir() else old.unlink()
+    ASSETS.clear()
+    c["_css"], c["_js"] = asset(ROOT / "static" / "style.css", "static"), asset(ROOT / "static" / "site.js", "static")
     (SITE / "index.html").write_text(home(c), encoding="utf-8")
     for p in c["projects"]:
         dest = SITE / "projects" / p["slug"]
         if p["demo"] == "copy":
-            shutil.copytree(Path(p["path"]) / "demo", dest, ignore=shutil.ignore_patterns("*.py", "__pycache__"))
+            shutil.copytree(Path(p["path"]) / "demo", dest, ignore=shutil.ignore_patterns("*.py", "__pycache__"), dirs_exist_ok=True)
         elif p["demo"] == "page":
             project_page(c, p, dest)
     (SITE / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {c['person']['site']}/sitemap.xml\n", encoding="utf-8")
