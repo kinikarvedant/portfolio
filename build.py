@@ -20,6 +20,7 @@ import sys
 import tomllib
 import zipfile
 from pathlib import Path
+from urllib.parse import urljoin
 
 ROOT = Path(__file__).parent
 SITE, OUT = ROOT / "site", ROOT / "out"
@@ -80,6 +81,7 @@ def load():
         p["branch"] = subprocess.run(["git", "-C", str(path), "branch", "--show-current"], capture_output=True, text=True).stdout.strip() if path else "main"
         p["page"] = f"projects/{p['slug']}/" if p["demo"] in ("page", "copy") else ""
         p["url"] = c["person"]["site"] + "/" + p["page"] if p["page"] else p["source"]
+        p["live"] = [(label, href, urljoin(p["url"], href)) for label, href in p.get("live", [])]  # href is relative to the project page
     return c
 
 
@@ -340,13 +342,14 @@ def project_page(c, p, dest):
     files = sorted(f for f in tracked if f and Path(f).name != "__init__.py" and (CODE_FILES.search(Path(f).name) and f.count("/") <= 1 or f.startswith("results/") and f.endswith(".csv")))
     links = "".join(f'<li><a href="{p["source"]}/blob/{p["branch"]}/{f}" rel="noopener">{e(f)}</a></li>' for f in files[:16])
     pts = "".join(f"<li>{e(h)}</li>" for h in p["highlights"])
+    live = "".join(f'<a class="btn dark" href="{e(href)}">{e(label)}</a>' for label, href, _ in p["live"])
     body = f"""<header class="phero" style="--tint:{p['glow']}">
   <div class="wrap">
     <p class="crumbs"><a href="{up}#work">&larr; All projects</a></p>
     <p class="kicker">{e(p['kicker'])}</p>
     <h1>{e(p['title'])}</h1>
     <p class="lede">{e(p['summary'])}</p>
-    <div class="btns"><a class="btn dark" href="{p['source']}" rel="noopener">Source on GitHub</a><a class="btn" href="{p['source']}#readme" rel="noopener">Full write-up</a></div>
+    <div class="btns">{live}<a class="btn{'' if live else ' dark'}" href="{p['source']}" rel="noopener">Source on GitHub</a><a class="btn" href="{p['source']}#readme" rel="noopener">Full write-up</a></div>
   </div>
 </header>
 <section class="pbody">
@@ -367,7 +370,7 @@ def project_page(c, p, dest):
 
 def github_profile(c):
     p = c["person"]
-    rows_ = "\n".join(f"| [{x['title']}]({x['url']}) | {x['summary']} | [source]({x['source']}) |" for x in c["projects"])
+    rows_ = "\n".join(f"| [{x['title']}]({x['url']}) | {x['summary']} | [source]({x['source']})" + "".join(f" · [{l.lower()}]({u})" for l, _, u in x["live"]) + " |" for x in c["projects"])
     skills = "\n".join(f"- **{k}:** {', '.join(v)}" for k, v in c["skills"].items())
     return f"""## Hi, I'm {p['short_name'].split()[0]}
 
@@ -396,7 +399,7 @@ def linkedin(c):
     about = Path(li["about_file"]).read_text(encoding="utf-8").strip()
     exp = "\n\n".join(f"**{x['role']}**, {x['org']} · {x['place']} · {x['when']}\n" + "\n".join(f"- {t}" for t in x["points"]) for x in c["experience"])
     edu = "\n".join(f"- {x['degree']}, {x['school']} · {x['when']}" + (f" ({x['note']})" if x.get("note") else "") for x in c["education"])
-    proj = "\n\n".join(f"**{x['title']}**\nLink: {x['url']}\n{x['summary']}\n" + "\n".join(f"- {h}" for h in x["highlights"]) for x in c["projects"])
+    proj = "\n\n".join(f"**{x['title']}**\nLink: {x['url']}\n" + "".join(f"{l}: {u}\n" for l, _, u in x["live"]) + f"{x['summary']}\n" + "\n".join(f"- {h}" for h in x["highlights"]) for x in c["projects"])
     feat = "\n".join(f"- {x['title']}: {x['url']}" for x in c["projects"][:2])
     return f"""# LinkedIn: paste-ready (generated from content.toml)
 
@@ -447,6 +450,8 @@ def build():
             shutil.copytree(Path(p["path"]) / "demo", dest, ignore=shutil.ignore_patterns("*.py", "__pycache__"), dirs_exist_ok=True)
         elif p["demo"] == "page":
             project_page(c, p, dest)
+            if (Path(p["path"]) / "demo").is_dir():  # an interactive demo shipped by the repo, served next to the write-up
+                shutil.copytree(Path(p["path"]) / "demo", dest / "demo", ignore=shutil.ignore_patterns("*.py", "__pycache__"), dirs_exist_ok=True)
     (SITE / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {c['person']['site']}/sitemap.xml\n", encoding="utf-8")
     (SITE / "sitemap.xml").write_text(sitemap(c), encoding="utf-8")
     (OUT / "github-profile").mkdir(parents=True, exist_ok=True)

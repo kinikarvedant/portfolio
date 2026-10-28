@@ -21,6 +21,7 @@ python build.py github   # also update repo descriptions, homepages and topics (
 
 - **Add a project:** add a `[[projects]]` block to `content.toml`.
   - Set `demo = "page"` for a generated page, `"copy"` if the repo ships its own `demo/` folder, or `"none"` to link to GitHub only.
+  - With `"page"`, a `demo/` folder in the repo is published at `projects/<slug>/demo/`. `live = [["Live demo", "demo/"]]` adds the button; links are relative to the project page.
   - If the card quotes numbers, add a `facts_*` function in `build.py` that reads them from the repo's results.
 - **Hide a project:** set `show = false`.
 - **Change wording anywhere:** edit `content.toml` and rebuild. The site, the GitHub profile and the LinkedIn text all pick it up.

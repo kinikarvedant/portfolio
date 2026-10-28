@@ -210,9 +210,10 @@ show = true
 order = 4
 repo = "Factory-Vision"
 path = 'C:\Data\Projects\Factory Vision'
-demo = "page"
+demo = "page"            # the repo's demo/ folder is published at projects/factory-vision/demo/
+live = [["Live demo", "demo/"]]
 title = "Factory Vision: defect detection with YOLOv8"
-kicker = "Solo · 2025"
+kicker = "Solo · 2025 · live demo"
 summary = "A YOLOv8 detector for scratches and dents, with a Streamlit app for uploads, webcam and a simulated production line. Trained and validated on synthetic images."
 highlights = [
   "mAP50 of {map50} and mAP50-95 of {map50_95} on {val_images} synthetic validation images, which shows the pipeline works end to end.",
