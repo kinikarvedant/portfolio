@@ -204,13 +204,38 @@ description = ""         # left as it is on GitHub
 topics = []
 
 [[projects]]
+slug = "agency-mcp-server"
+short = "Agency MCP Server"
+glow = "#9b8cff"
+icon = "code"
+cards = []
+show = true
+order = 4
+repo = "agency-mcp-server"
+path = 'C:\Data\Projects\agency-mcp-server'
+demo = "page"
+# the playground runs as a container on the server (~/vedant-demos), behind the site's nginx
+live = [["Live playground", "/demos/agency-mcp/"], ["Recorded MCP session", "/demos/agency-mcp/session.html"]]
+title = "Agency MCP Server: website audits for MCP clients"
+kicker = "Solo · Oct 2026 · live playground"
+summary = "A read-only Model Context Protocol server with eight website-audit tools for an agency's client sites: page audits, structured data, crawler access, Core Web Vitals, a polite crawl, answerability scoring, Search Console and answer-engine visibility. Every tool is held to a per-client allowlist and fetches through an SSRF guard."
+highlights = [
+  "8 tools and 88 tests, run in CI on Node 22 and 24 plus a Docker boot check. The playground calls the tools over Streamable HTTP against three demo sites.",
+  "The SSRF guard checks the address inside the socket's own DNS lookup, so private, link-local and CGNAT addresses are refused, including after redirects.",
+  "Search Console and the visibility check run on labelled fixture and mock data until real credentials exist. Visibility rates carry Wilson intervals, and changes are tested with Newcombe intervals against run-to-run variance.",
+]
+stack = ["TypeScript", "MCP TypeScript SDK", "Zod 4", "Vitest", "Docker", "GitHub Actions"]
+description = ""         # set when the repo was created
+topics = []
+
+[[projects]]
 slug = "factory-vision"
 short = "Factory Vision"
 glow = "#ff8a4c"
 icon = "scan"
 cards = ["runs/detect/train3/val_batch0_pred.jpg", "runs/detect/train3/confusion_matrix.png"]
 show = true
-order = 4
+order = 5
 repo = "Factory-Vision"
 path = 'C:\Data\Projects\Factory Vision'
 demo = "page"            # the repo's demo/ folder is published at projects/factory-vision/demo/
@@ -235,7 +260,7 @@ glow = "#c8b6ff"
 icon = "layout"
 cards = []
 show = false             # hidden until the driver data is removed from the public repo
-order = 5
+order = 6
 repo = "Blockchain-based-route-optimization-and-loan-prediction-platform"
 path = ""
 demo = "none"
