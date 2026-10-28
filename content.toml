@@ -187,10 +187,12 @@ tiles = ["Dental clinic", "Coffee roaster", "Plumber"]  # the three demo busines
 show = true
 order = 3
 repo = "seo-geo-starter"
-path = ""
-demo = "none"            # static demos build fine (see notes); not hosted until the repo's wording is settled
+path = 'C:\Data\Projects\seo-geo-starter'
+demo = "page"
+# the demos run as containers on the server (~/vedant-demos), behind the site's nginx
+live = [["Dental clinic demo", "/demos/dental"], ["Coffee roaster demo", "/demos/cafe"], ["Plumber demo", "/demos/plumber"]]
 title = "Local-business site starter for search and answer engines"
-kicker = "Solo · Sep 2026 · 6 of 10 milestones"
+kicker = "Solo · Sep 2026 · 6 of 10 milestones · live demos"
 summary = "A config-driven Next.js 16 template for local-business websites, optimised for search, featured snippets, voice answers and answer-engine citation. One codebase builds every client from a validated Zod config: routes, sitemap, structured data, brand palette and copy."
 highlights = [
   "Accessible brand colours from two hex inputs: the shade ramp is built in OKLab, and text shades are binary-searched per hue to pass WCAG contrast.",

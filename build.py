@@ -470,8 +470,8 @@ def check(c):
             if f.suffix == ".html":
                 for ref in re.findall(r'(?:href|src)="([^"]*)"', text):
                     ref = ref.split("#")[0].split("?")[0]
-                    if not ref or re.match(r"[a-z]+:|//|/downloads/|/media/", ref):
-                        continue  # external links, and files kept on the server only
+                    if not ref or re.match(r"[a-z]+:|//|/downloads/|/media/|/demos/", ref):
+                        continue  # external links, files kept on the server only, and the demo containers
                     target = (f.parent / ref).resolve()
                     if not (target.exists() and (target.is_file() or (target / "index.html").exists())):
                         problems.append(f"{f.relative_to(ROOT)}: broken link {ref}")
