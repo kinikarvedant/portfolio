@@ -161,9 +161,10 @@ show = true
 order = 2
 repo = "smart-traffic-drl"
 path = 'C:\Data\Projects\smart-traffic-drl'
-demo = "page"
+demo = "page"            # the repo's demo/ folder (a replay of recorded runs) is published at projects/smart-traffic-drl/demo/
+live = [["Live demo (replay)", "demo/"]]
 title = "Traffic signals with deep reinforcement learning"
-kicker = "Solo · 2025, re-evaluated Oct 2026"
+kicker = "Solo · 2025, re-evaluated Oct 2026 · live replay"
 summary = "A PPO agent decides which direction gets green at a simulated four-way intersection in SUMO, and is compared fairly with fixed-time signal plans over five seeds."
 highlights = [
   "Mean wait of {ppo_regular}s per vehicle vs {fixed10_regular}s for the best of three fixed-time plans tested, on the traffic pattern it trained on.",
