@@ -4,6 +4,7 @@
     python build.py github     also update each repo's description, homepage and topics (needs `gh auth login`)
     python build.py release    also publish site/ as a zip + checksum on the portfolio repo's latest GitHub release,
                                which the server's deploy script downloads
+    python build.py resume     also write out/resume/: a one-page A4 résumé as PDF (printed by Edge) and DOCX
 
 site/                      the website: home page, project pages, robots.txt, sitemap.xml
 out/github-profile/        README.md for github.com/kinikarvedant (the profile repo)
@@ -17,6 +18,8 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
+import time
 import tomllib
 import zipfile
 from pathlib import Path
@@ -428,6 +431,294 @@ def linkedin(c):
 """
 
 
+# ------------------------------------------------------------------ résumé: one A4 page, PDF (for people) and DOCX (for job portals)
+
+EDGE = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
+RESUME = OUT / "resume"
+RESUME_FILE = "Vedant-Kinikar-Resume"
+
+
+def nobreak(text):
+    """No line break inside '150 m', '3.06 s' or 'Jul 2026': join them with a no-break space."""
+    text = re.sub(r"(\d) (m|s|h)\b", "\\1\u00a0\\2", text)
+    return re.sub(r"\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{4})\b", "\\1\u00a0\\2", text)
+
+
+def resume_model(c):
+    """What the résumé shows, in page order. Project numbers come from the results files, the phone from private.toml."""
+    r, p = c["resume"], c["person"]
+    private = ROOT / "private.toml"  # never committed: the phone number stays out of the public repo
+    if not private.exists():
+        sys.exit("private.toml is missing: add  phone = \"04xx xxx xxx\"")
+    phone = tomllib.loads(private.read_text(encoding="utf-8"))["phone"]
+    shown = {x["slug"]: x for x in c["projects"]}
+    contact = [(r["location"], ""), (phone, "tel:+61" + phone.replace(" ", "")[1:]), (p["email"], "mailto:" + p["email"]),
+               (p["site"].removeprefix("https://"), p["site"]), (r["linkedin"], "https://www." + r["linkedin"]),
+               (f"github.com/{p['github']}", f"https://github.com/{p['github']}")]
+    return {
+        **r, "contact": contact,
+        "education": [{"degree": x["degree"], "school": x["short"], "note": x.get("note", "").replace(" / ", "/"), "coursework": x.get("coursework", ""), "project": x.get("project", ""),
+                       "when": x["when"] + (" (expected)" if x.get("expected") else "")} for x in c["education"]],
+        "projects": [{**x, "url": shown[x["slug"]]["url"], "bullets": [b.format(**shown[x["slug"]]["facts"]) for b in x["bullets"]]} for x in r["projects"]],
+        "also": [{**x, "url": shown[x["slug"]]["url"]} for x in r["also"]],
+        "experience": [{**x, "points": x["points"][:2]} for x in c["experience"]],
+    }
+
+
+RESUME_CSS = """
+@font-face { font-family: "Inter Tight"; font-weight: 400; src: url(fonts/InterTight-Regular.ttf) format("truetype"); }
+@font-face { font-family: "Inter Tight"; font-weight: 600; src: url(fonts/InterTight-SemiBold.ttf) format("truetype"); }
+@page { size: A4; margin: 11mm 15mm 10mm; }
+html { font: 400 10pt/1.25 "Inter Tight", Arial, sans-serif; color: #111; font-variant-ligatures: none; }
+body { margin: 0; }
+a { color: inherit; text-decoration: none; }
+h1 { display: inline-block; margin: 0; font-size: 24pt; font-weight: 600; letter-spacing: -.025em; line-height: 1.05;
+     background: linear-gradient(transparent 64%, #f5c518 64%, #f5c518 90%, transparent 90%); }
+.contact, .rights { margin: 3pt 0 0; font-size: 9.5pt; color: #222; }
+h2 { display: flex; align-items: center; gap: 5pt; margin: 6.5pt 0 2.5pt; padding-bottom: 1.5pt; border-bottom: .75pt solid #111;
+     font-size: 11.5pt; font-weight: 600; letter-spacing: .01em; break-after: avoid; }
+h2::before { content: ""; width: 6pt; height: 6pt; border-radius: 1.5pt; background: #f5c518; }
+p { margin: 0; }
+b, strong { font-weight: 600; }
+.entry { margin-top: 2.5pt; break-inside: avoid; }
+.entry:first-of-type { margin-top: 0; }
+.line { display: flex; justify-content: space-between; gap: 12pt; }
+.when { flex: none; color: #444; }
+.sub { color: #444; }
+ul { margin: 1pt 0 0; padding-left: 11pt; }
+li { margin: .6pt 0; padding-left: 1pt; }
+.kv { margin-top: 1.2pt; }
+.note { margin-bottom: 2pt; color: #444; }
+.nw { white-space: nowrap; }
+"""
+
+
+def resume_html(m):
+    def link(text, href, bold=False):
+        t = f"<b>{e(text)}</b>" if bold else e(text)
+        return f'<a href="{e(href)}">{t}</a>' if href else t
+
+    def entry(left, when, below=""):
+        return f'<div class="entry"><div class="line"><span>{left}</span><span class="when">{e(when)}</span></div>{below}</div>'
+
+    def bullets(items):
+        return "<ul>" + "".join(f"<li>{e(t)}</li>" for t in items) + "</ul>" if items else ""
+
+    def keep(page):  # numbers stay with their units (150 m, 3.06 s); hyphenated words never break, which garbles copied text
+        head, body = page.split("<body>", 1)
+        body = nobreak(body)
+        body = re.sub(r"(?<![\w/.@:-])(\w+(?:[-–]\w+)+)(?![\w/@-])", r'<span class="nw">\1</span>', body)
+        return head + "<body>" + body
+
+    def kv(label, text):
+        return f'<p class="kv"><b>{e(label)}:</b> {e(text)}</p>'
+
+    edu = "".join(entry(f"<b>{e(x['degree'])}</b> | {e(x['school'])}" + (f" | {e(x['note'])}" if x["note"] else ""), x["when"],
+                        (f'<p class="sub">Coursework: {e(x["coursework"])}</p>' if x["coursework"] else "")
+                        + (f'<p class="sub">Final-year project: {e(x["project"])}</p>' if x["project"] else "")) for x in m["education"])
+    proj = "".join(entry(f"{link(x['name'], x['url'], True)} | {e(x['tech'])}", x["when"], bullets(x["bullets"])) for x in m["projects"])
+    also = "".join(f'<p class="kv">{link(x["name"], x["url"], True)} ({e(x["when"])}): {e(x["text"])}</p>' for x in m["also"])
+    exp = "".join(entry(f"<b>{e(x['role'])}</b> | {e(x['org'])}, {e(x['place'])}", x["when"], bullets(x["points"])) for x in m["experience"])
+    contact = " | ".join(link(t, h) for t, h in m["contact"][:3]) + "<br />" + " | ".join(link(t, h) for t, h in m["contact"][3:])
+    return keep(f"""<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8" />
+<title>{e(m['name'])} – Résumé</title>
+<style>{RESUME_CSS}</style>
+</head>
+<body>
+<h1>{e(m['name'])}</h1>
+<p class="contact">{contact}</p>
+<p class="rights"><b>Work rights:</b> {e(m['work_rights'])}</p>
+<h2>Summary</h2>
+<p>{e(m['summary'])}</p>
+<h2>Education</h2>
+{edu}
+<h2>Skills</h2>
+{"".join(kv(k, v) for k, v in m['skills'])}
+<h2>Projects</h2>
+<p class="note">All self-initiated. Code, write-ups and live demos: {link(m['contact'][3][0], m['contact'][3][1])}</p>
+{proj}
+{also}
+<h2>Experience</h2>
+{exp}
+{kv("Other work", m['other_work'])}
+<h2>Certifications, leadership and languages</h2>
+{kv("Certifications", m['certifications'])}
+{kv("Udemy courses", m['courses'])}
+{kv("Leadership at VIT", m['leadership'])}
+{kv("Languages", m['languages'])}
+</body>
+</html>
+""")
+
+
+def resume_docx(m, path):
+    """The same content as a plain Word file: one column, real headings, right tab stops for dates, no tables."""
+    from docx import Document
+    from docx.enum.text import WD_TAB_ALIGNMENT
+    from docx.oxml import OxmlElement
+    from docx.oxml.ns import qn
+    from docx.shared import Cm, Pt, RGBColor
+
+    m = {k: nobreak(v) if isinstance(v, str) else v for k, v in m.items()}
+    for key in ("projects", "experience"):
+        m[key] = [{**x, **{f: [nobreak(b) for b in x[f]] for f in ("bullets", "points") if f in x}} for x in m[key]]
+    d = Document()
+    s = d.sections[0]
+    s.page_width, s.page_height = Cm(21), Cm(29.7)
+    s.top_margin, s.bottom_margin, s.left_margin, s.right_margin = Cm(1.3), Cm(1.2), Cm(1.6), Cm(1.6)
+    width = s.page_width - s.left_margin - s.right_margin
+    for name, size in (("Normal", 10), ("Heading 1", 11.5), ("List Bullet", 10)):
+        st = d.styles[name]
+        st.font.name, st.font.size, st.font.color.rgb = "Calibri", Pt(size), RGBColor(0x11, 0x11, 0x11)
+        st.element.rPr.rFonts.set(qn("w:asciiTheme"), "")  # the theme font would override Calibri in headings
+        for attr in ("w:ascii", "w:hAnsi", "w:cs", "w:eastAsia"):
+            st.element.rPr.rFonts.set(qn(attr), "Calibri")
+        st.paragraph_format.space_before, st.paragraph_format.space_after, st.paragraph_format.line_spacing = Pt(0), Pt(0), 1.0
+        lang = st.element.rPr.find(qn("w:lang"))
+        if lang is None:
+            lang = OxmlElement("w:lang")
+            st.element.rPr.append(lang)
+        lang.set(qn("w:val"), "en-AU")  # spell-check in Australian English
+    h1 = d.styles["Heading 1"]
+    h1.font.bold, h1.paragraph_format.space_before, h1.paragraph_format.space_after = True, Pt(7), Pt(2)
+    bullet = d.styles["List Bullet"].paragraph_format
+    bullet.left_indent, bullet.first_line_indent = Cm(.55), Cm(-.35)  # bullet inside the margin, text hanging
+    now = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)  # the file format stores UTC
+    cp = d.core_properties
+    cp.title, cp.author, cp.last_modified_by, cp.language, cp.comments, cp.created, cp.modified, cp.revision = (
+        f"{m['name']} – Résumé", m["name"], m["name"], "en-AU", "", now, now, 1)
+
+    def run(p, text, bold=False, size=None):
+        r = p.add_run(text)
+        r.bold = bold or None
+        if size:
+            r.font.size = Pt(size)
+        return r
+
+    def link(p, text, url, bold=False):
+        rel = p.part.relate_to(url, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink", is_external=True)
+        h, r, rpr, t = OxmlElement("w:hyperlink"), OxmlElement("w:r"), OxmlElement("w:rPr"), OxmlElement("w:t")
+        h.set(qn("r:id"), rel)
+        if bold:
+            rpr.append(OxmlElement("w:b"))
+        r.append(rpr)
+        t.text = text
+        t.set(qn("xml:space"), "preserve")
+        r.append(t)
+        h.append(r)
+        p._p.append(h)
+
+    def heading(text):
+        p = d.add_paragraph(text, style="Heading 1")
+        border, bottom = OxmlElement("w:pBdr"), OxmlElement("w:bottom")
+        for k, v in (("w:val", "single"), ("w:sz", "6"), ("w:space", "1"), ("w:color", "111111")):
+            bottom.set(qn(k), v)
+        border.append(bottom)
+        p._p.get_or_add_pPr().append(border)
+
+    def entry_line(parts, when):
+        p = d.add_paragraph()
+        p.paragraph_format.space_before = Pt(3)
+        p.paragraph_format.keep_with_next = True
+        p.paragraph_format.tab_stops.add_tab_stop(width, WD_TAB_ALIGNMENT.RIGHT)
+        for text, bold, url in parts:
+            link(p, text, url, bold) if url else run(p, text, bold)
+        run(p, "\t" + when)
+
+    def kv(label, text):
+        p = d.add_paragraph()
+        p.paragraph_format.space_before = Pt(1.5)
+        run(p, label + ": ", True)
+        run(p, text)
+
+    p = d.add_paragraph()
+    run(p, m["name"], True, 20)
+    p = d.add_paragraph()
+    p.paragraph_format.space_before = Pt(2)
+    for i, (text, url) in enumerate(m["contact"]):
+        if i == 3:
+            p = d.add_paragraph()
+        elif i:
+            run(p, " | ")
+        link(p, text, url) if url else run(p, text)
+    p = d.add_paragraph()
+    p.paragraph_format.space_before = Pt(2)
+    run(p, "Work rights: ", True)
+    run(p, m["work_rights"])
+    heading("Summary")
+    d.add_paragraph(m["summary"])
+    heading("Education")
+    for x in m["education"]:
+        entry_line([(x["degree"], True, ""), (" | " + x["school"] + (" | " + x["note"] if x["note"] else ""), False, "")], x["when"])
+        if x["coursework"]:
+            d.add_paragraph("Coursework: " + x["coursework"])
+        if x["project"]:
+            d.add_paragraph("Final-year project: " + x["project"])
+    heading("Skills")
+    for k, v in m["skills"]:
+        kv(k, v)
+    heading("Projects")
+    p = d.add_paragraph()
+    run(p, "All self-initiated. Code, write-ups and live demos: ")
+    link(p, m["contact"][3][0], m["contact"][3][1])
+    for x in m["projects"]:
+        entry_line([(x["name"], True, x["url"]), (" | " + x["tech"], False, "")], x["when"])
+        for b in x["bullets"]:
+            d.add_paragraph(b, style="List Bullet")
+    for x in m["also"]:
+        p = d.add_paragraph()
+        p.paragraph_format.space_before = Pt(3)
+        link(p, x["name"], x["url"], True)
+        run(p, f" ({x['when']}): {x['text']}")
+    heading("Experience")
+    for x in m["experience"]:
+        entry_line([(x["role"], True, ""), (f" | {x['org']}, {x['place']}", False, "")], x["when"])
+        for b in x["points"]:
+            d.add_paragraph(b, style="List Bullet")
+    kv("Other work", m["other_work"])
+    heading("Certifications, leadership and languages")
+    kv("Certifications", m["certifications"])
+    kv("Udemy courses", m["courses"])
+    kv("Leadership at VIT", m["leadership"])
+    kv("Languages", m["languages"])
+    d.save(path)
+    drop = ("docProps/thumbnail.jpeg", "docProps/app.xml")  # the template's blank preview and its old app details
+    with zipfile.ZipFile(path) as z:
+        parts = {n: z.read(n) for n in z.namelist() if n not in drop}
+    for n in drop:
+        parts["_rels/.rels"] = re.sub(rb'<Relationship [^>]*Target="' + n.encode() + rb'"[^>]*/>', b"", parts["_rels/.rels"])
+        parts["[Content_Types].xml"] = re.sub(rb'<Override [^>]*PartName="/' + n.encode() + rb'"[^>]*/>', b"", parts["[Content_Types].xml"])
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
+        for n, data in parts.items():
+            z.writestr(n, data)
+
+
+def resume(c):
+    """Write out/resume/: the HTML, the PDF printed from it by Edge, and the DOCX. Returns the problems found."""
+    m = resume_model(c)
+    RESUME.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(ROOT / "resume" / "fonts", RESUME / "fonts", dirs_exist_ok=True)
+    html_path, pdf, docx = RESUME / "resume.html", RESUME / f"{RESUME_FILE}.pdf", RESUME / f"{RESUME_FILE}.docx"
+    html_path.write_text(resume_html(m), encoding="utf-8")
+    pdf.unlink(missing_ok=True)
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as profile:  # a throwaway profile, so a running Edge window doesn't swallow the job
+        subprocess.run([EDGE, "--headless=new", "--disable-gpu", "--no-pdf-header-footer", f"--user-data-dir={profile}",
+                        f"--print-to-pdf={pdf.resolve()}", html_path.resolve().as_uri()], check=True, capture_output=True, timeout=120)
+        for _ in range(240):  # Edge hands the job to a background process and returns early: wait for a finished file
+            size = pdf.stat().st_size if pdf.exists() else 0
+            time.sleep(.25)
+            if size and size == (pdf.stat().st_size if pdf.exists() else 0):
+                break
+    resume_docx(m, docx)
+    problems = [f"{html_path.name}: banned word '{x.group(0)}'" for x in BANNED.finditer(html_path.read_text(encoding="utf-8"))] if BANNED else []
+    if not pdf.exists():
+        problems.append("Edge did not write the PDF")
+    return problems
+
+
 def sitemap(c):
     urls = [c["person"]["site"] + "/"] + [c["person"]["site"] + "/" + p["page"] for p in c["projects"] if p["page"]]
     return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + "".join(f"  <url><loc>{u}</loc></url>\n" for u in urls) + "</urlset>\n"
@@ -513,3 +804,7 @@ if __name__ == "__main__":
         sync_github(content)
     if sys.argv[1:] == ["release"]:
         release(content)
+    if sys.argv[1:] == ["resume"]:
+        issues = resume(content)
+        print("\n".join(issues) or f"ok: {RESUME / RESUME_FILE}.pdf and .docx")
+        sys.exit(1 if issues else 0)

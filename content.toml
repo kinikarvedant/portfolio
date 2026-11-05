@@ -69,15 +69,16 @@ title = "Metro Tunnel study"
 caption = "1.6M sensor counts"
 color = "#ffd6c2"
 
+# Points are worded to match the internship letters; the résumé uses the first two.
 [[experience]]
-role = "Software / Project Intern"
+role = "Software/Project Intern"
 org = "SoulSoft Infotech Pvt. Ltd."
 place = "Sangamner, India"
 when = "Oct 2025 – Jan 2026"
 points = [
-  "Worked on web and mobile development in the company's stack: React, Node.js, REST APIs and database tooling.",
-  "Implemented a module-level internal-dashboard feature end to end: requirement analysis, edge-case handling and integration.",
-  "Helped with API and cloud-environment improvements, researching performance-oriented approaches along the way.",
+  "Implemented a React and Node.js internal-dashboard feature, from requirements and edge cases to code.",
+  "Investigated a data-sync issue between two API endpoints; proposed middleware and data-flow fixes.",
+  "Worked on web and mobile features in the company's React, Node.js and REST API stack.",
 ]
 
 [[experience]]
@@ -86,26 +87,35 @@ org = "AiravataOne Technologies"
 place = "Palghar, India"
 when = "Jul 2025 – Oct 2025"
 points = [
-  "Built ERP modules for manufacturing clients: module design, coding and debugging under senior-developer review.",
-  "Turned dense system requirements into maintainable code, and proposed implementation improvements from my own research.",
-  "Worked across functions to pin down requirements and keep delivery predictable.",
+  "Supported development of ERP modules for manufacturers: design, coding and debugging under a senior developer.",
+  "Clarified requirements with other teams; researched and proposed technical solutions.",
 ]
 
+# short = how the résumé names the school; expected = still studying
 [[education]]
 degree = "Master of Data Science"
 school = "RMIT University · Melbourne, VIC"
+short = "RMIT University, Melbourne"
 when = "Jul 2026 – Dec 2028"
+expected = true
+coursework = "Practical Data Science with Python, Data Wrangling, Database Concepts, Programming Fundamentals"
 
 [[education]]
 degree = "Master of Business Administration (Finance)"
 school = "SVKM's Narsee Monjee Institute of Management Studies (NMIMS) · Mumbai, India · Online"
-when = "2026 – 2028"
+short = "SVKM's NMIMS, India"
+when = "2026–2028"
+expected = true
+coursework = "Business Analytics, Quantitative Methods, Financial Accounting, Cost and Management Accounting"
 
 [[education]]
 degree = "B.Tech, Computer Science (Core)"
 school = "Vellore Institute of Technology · Vellore, Tamil Nadu, India"
+short = "Vellore Institute of Technology, India"
 when = "Sep 2021 – Jul 2025"
 note = "CGPA 8.28 / 10"
+# résumé only; facts from the BOLT-2.0 code (random forest, hashlib hash chain), team of 2
+project = "BOLT 2.0 (team of 2), a random-forest loan-amount model and a hash-chained trip ledger"
 
 [skills]
 "Programming" = ["Python", "SQL", "Java", "JavaScript"]
@@ -122,6 +132,7 @@ certifications = [
 leadership = [
   "Technical mentor (informal peer support), VIT Vellore · 2024–2025",
   "Team coordinator, academic project collaboration group · 2023–2024",
+  "Event support volunteer, department technical events, VIT Vellore · 2022–2023",
 ]
 
 # ---------------------------------------------------------------- projects
@@ -276,3 +287,70 @@ topics = []
 [linkedin]
 headline = "Data science student at RMIT building ML on real Melbourne data | Tested the Metro Tunnel's effect on CBD foot traffic with 1.6M sensor counts | Open to data/ML internships and part-time roles"
 about_file = 'C:\Data\Study\RMIT\LinkedIn\drafts\2026-10-20\profile-about.clean.txt'
+
+# ---------------------------------------------------------------- résumé (python build.py resume)
+# One A4 page, single column, built for Australian data, analytics and ML roles.
+# Rules followed: C:\Data\Study\RMIT\LinkedIn\jobs\resume\research-2026-11-05.md. Every claim is checked in
+# facts-2026-11-05.md next to it. The phone number comes from private.toml, which is never committed.
+# {placeholders} are filled from each project's results files, exactly like the site.
+[resume]
+name = "Vedant Kinikar"
+location = "Melbourne VIC"
+linkedin = "linkedin.com/in/vedant-kinikar"
+work_rights = "Student visa (subclass 500), up to 48 hours per fortnight during semester, unlimited during university breaks."
+summary = "Master of Data Science student at RMIT with a B.Tech in Computer Science and two software internships. Takes projects from raw data to live demo: cleaning messy real sensor feeds, forecasting and testing models against baselines. Seeking data analyst, data science and machine learning internships and part-time roles."
+skills = [
+  ["Data and languages", "Python, pandas, SQL (MySQL, PostgreSQL), Excel, TypeScript, JavaScript, Java"],
+  ["Machine learning", "scikit-learn, PyTorch, Stable-Baselines3, YOLOv8, OpenCV; forecasting, permutation tests"],
+  ["Visualisation", "Leaflet maps, Chart.js, matplotlib, Streamlit"],
+  ["Web, cloud and tools", "React, Next.js, Node.js, Django, REST APIs, Docker, Git, Linux, AWS, Google Cloud"],
+]
+other_work = "kitchen hand and front-of-house staff, Lala's Kitchen (Indian restaurant), DFO South Wharf (since Jul 2026); ferry deck assistant, India (Jan–Feb 2026); kitchen porter, Quickie Restaurant, Vellore, India (Apr–Jul 2025)."
+certifications = "AWS Certified Cloud Practitioner (Feb 2024); Google Cloud Certified – Cloud Digital Leader (Jan 2024)"
+courses = "Java Masterclass, 135.5 h (Jan 2026); CompTIA Security+ exam-prep course, 31 h (Oct 2025)"
+leadership = "peer mentor (2024–25), project team coordinator (2023–24), tech-events volunteer (2022–23)"
+languages = "English (IELTS overall band 8.0); Hindi and Marathi (native); German (basic)"
+
+[[resume.projects]]
+slug = "melbourne-footfall"
+name = "Melbourne foot traffic: Metro Tunnel study and forecasts"
+when = "Oct 2026"
+tech = "Python, pandas, scikit-learn, Leaflet"
+bullets = [
+  "Cleaned 1.6M hourly counts from 102 City of Melbourne sensors, separating zero-count hours from outages.",
+  "Tested the Metro Tunnel's impact with a year-on-year, near-vs-far permutation test: no measurable effect at a 150 m radius set in advance; fixed a triple-counted corner behind a spurious 11% effect.",
+  "Forecast {test_sensors} sensors a week ahead with gradient boosting: {wape_model}% error (WAPE) vs {wape_naive}% for same hour last week and {wape_4w}% for a 4-week average, over 8 test weeks.",
+]
+
+[[resume.projects]]
+slug = "smart-traffic-drl"
+name = "Traffic signals with deep reinforcement learning"
+when = "Sep 2025 – Nov 2025"
+tech = "Python, Stable-Baselines3, SUMO"
+bullets = [
+  "Trained a PPO controller in a SUMO simulation; benchmarked it against three fixed-time plans over five seeds.",
+  "Cut mean wait to {ppo_regular} s per vehicle vs {fixed10_regular} s for the best fixed plan on its training traffic; on unseen random arrivals it lost ({ppo_random} s vs {fixed10_random} s), documented as a limitation. Retrained in Oct 2026 after fixing an action-space bug.",
+]
+
+[[resume.projects]]
+slug = "factory-vision"
+name = "Factory Vision: defect detection with YOLOv8"
+when = "Jun 2025 – Aug 2025"
+tech = "Python, YOLOv8, OpenCV, Streamlit"
+bullets = [
+  "Built a YOLOv8 scratch-and-dent detector and Streamlit app; later ran the model in-browser via ONNX Runtime Web.",
+  "Scored mAP50 {map50} on {val_images} synthetic validation images; it misses obvious dents on real photos, so real data is next.",
+]
+
+# shorter entries, one line each
+[[resume.also]]
+slug = "agency-mcp-server"
+name = "Agency MCP Server"
+when = "Oct 2026"
+text = "TypeScript Model Context Protocol server; 8 audit tools, an SSRF guard, 88 tests."
+
+[[resume.also]]
+slug = "seo-geo-starter"
+name = "Local-business site starter"
+when = "Sep 2026"
+text = "Next.js 16 codebase; three live demo sites, one config each; 257 tests."
