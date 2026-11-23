@@ -192,6 +192,8 @@ def head_meta(c, og, up):
         out.append('<meta name="twitter:card" content="summary" />')
     out += [f'<link rel="icon" href="{up}favicon.svg" type="image/svg+xml" />', f'<link rel="icon" href="{up}favicon.ico" sizes="32x32" />',
             f'<link rel="apple-touch-icon" href="{up}apple-touch-icon.png" />']
+    if p.get("stats"):  # GoatCounter: no cookies, counts page views; served by the site's own server
+        out.append(f'<script data-goatcounter="{p["site"]}/stats/count" async src="{p["site"]}/stats/count.js"></script>')
     return "\n".join(out)
 
 

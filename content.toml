@@ -19,6 +19,7 @@ seo_description = "Vedant Kinikar, Master of Data Science student at RMIT Melbou
 job_title = "Master of Data Science student"
 google_verification = ""   # Search Console "HTML tag" code (the content="..." value)
 bing_verification = ""     # Bing Webmaster Tools meta-tag code
+stats = true                # cookie-free visit counts (GoatCounter on the server at /stats/)
 
 [intro]
 hero_lead = "Hey!"
