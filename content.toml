@@ -151,18 +151,18 @@ tagline = "1.6 million sensor counts: did the Metro Tunnel change foot traffic? 
 short = "Melbourne Footfall"
 glow = "#4cc3ff"
 icon = "pin"
-cards = ["results/forecast_week.png", "results/metro_tunnel_am_peak.png"]
+cards = ["results/forecast_week.png", "results/metro_tunnel_year_one_am_peak.png"]
 show = true
 order = 1
 repo = "melbourne-footfall"
 path = 'C:\Data\Projects\melbourne-footfall'
 demo = "copy"            # the repo ships its own interactive demo in demo/
 title = "Melbourne foot traffic: the Metro Tunnel and week-ahead forecasts"
-kicker = "Solo · Oct 2026 · live demo"
+kicker = "Solo · Oct 2026, updated Nov 2026 · live demo"
 summary = "1.6 million hourly counts from the City of Melbourne's pedestrian sensors, used to test whether the Metro Tunnel changed street-level foot traffic, and to forecast 99 of its sensors a week ahead."
 highlights = [
   "Forecast error of {wape_model}% vs {wape_naive}% for a same-hour-last-week baseline ({wape_4w}% for a 4-week average), across {test_sensors} sensors and 8 test weeks.",
-  "No measurable Metro Tunnel effect at the 150 m radius fixed in advance. A triple-counted street corner that faked an 11% effect was caught and fixed before publishing.",
+  "No measurable Metro Tunnel effect at the 150 m radius fixed in advance, after ten months and again after the first year. A triple-counted street corner that faked an 11% effect was caught and fixed before publishing.",
   "Cleans a feed that silently drops zero-count hours: night gaps are read as zeros, daytime gaps as sensor outages.",
 ]
 stack = ["Python", "pandas", "scikit-learn", "Leaflet", "Chart.js"]
