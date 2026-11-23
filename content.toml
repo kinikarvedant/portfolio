@@ -13,7 +13,12 @@ linkedin = "https://www.linkedin.com/in/vedant-kinikar"
 site = "https://vedantkinikar.duckdns.org"
 resume = "/downloads/vedant-kinikar-resume.pdf"   # lives on the server only, not in git
 photo = ""                                        # e.g. "/media/vedant.jpg" once it's uploaded
-open_to = "Open to data, ML and software internships"
+open_to = "Open to data, ML and software internships and part-time work"
+seo_title = "Vedant Kinikar | Data science student, RMIT Melbourne"
+seo_description = "Vedant Kinikar, Master of Data Science student at RMIT Melbourne. Live demos: foot-traffic forecasting, traffic-signal RL and in-browser defect detection."
+job_title = "Master of Data Science student"
+google_verification = ""   # Search Console "HTML tag" code (the content="..." value)
+bing_verification = ""     # Bing Webmaster Tools meta-tag code
 
 [intro]
 hero_lead = "Hey!"
@@ -141,6 +146,7 @@ leadership = [
 
 [[projects]]
 slug = "melbourne-footfall"
+tagline = "1.6 million sensor counts: did the Metro Tunnel change foot traffic? Plus week-ahead forecasts for 99 sensors."   # one line for link previews
 short = "Melbourne Footfall"
 glow = "#4cc3ff"
 icon = "pin"
@@ -159,11 +165,12 @@ highlights = [
   "Cleans a feed that silently drops zero-count hours: night gaps are read as zeros, daytime gaps as sensor outages.",
 ]
 stack = ["Python", "pandas", "scikit-learn", "Leaflet", "Chart.js"]
-description = "Melbourne pedestrian sensors: did the Metro Tunnel change foot traffic, and a week-ahead forecast per sensor"
-topics = ["data-science", "forecasting", "melbourne", "open-data", "pandas", "scikit-learn"]
+description = "1.6M hourly counts from 102 City of Melbourne sensors: a Metro Tunnel before/after test and week-ahead forecasts for {test_sensors} sensors"
+topics = ["data-science", "forecasting", "melbourne", "open-data", "pandas", "scikit-learn", "time-series", "time-series-forecasting", "smart-city", "pedestrian"]
 
 [[projects]]
 slug = "smart-traffic-drl"
+tagline = "A PPO agent runs a simulated intersection and is tested fairly against fixed-time plans over five seeds."   # one line for link previews
 short = "Smart Traffic RL"
 glow = "#5ee08a"
 icon = "signal"
@@ -185,11 +192,12 @@ highlights = [
 stack = ["Python", "PyTorch", "Stable-Baselines3", "SUMO", "Gymnasium"]
 images = ["results/figures/ppo_demo.gif", "results/figures/ppo_vs_fixed_time.png", "results/figures/training_curve.png"]
 image_alts = ["Animation of the PPO agent switching the lights at the simulated intersection", "Bar charts of waiting time, queue length and throughput for PPO and three fixed-time plans", "Training curves: reward and mean waiting time per episode"]
-description = "Deep reinforcement learning (PPO) for traffic signal control in SUMO, evaluated against fixed-time plans"
-topics = ["reinforcement-learning", "sumo", "traffic-signal-control", "stable-baselines3", "pytorch"]
+description = "PPO traffic-signal control in SUMO: {ppo_regular} s mean wait vs {fixed10_regular} s for the best of three fixed-time plans on its training demand, over 5 seeds, with a browser replay"
+topics = ["reinforcement-learning", "deep-reinforcement-learning", "ppo", "sumo", "traffic-signal-control", "traffic-simulation", "stable-baselines3", "pytorch"]
 
 [[projects]]
 slug = "seo-geo-starter"
+tagline = "A config-driven Next.js template for local-business sites, built for search and answer engines."   # one line for link previews
 short = "Site Starter"
 glow = "#f5c518"
 icon = "layout"
@@ -211,11 +219,12 @@ highlights = [
   "Three fictional Melbourne demos (dental clinic, roaster, plumber) built from config alone, with 257 unit tests and per-client URL checks in CI.",
 ]
 stack = ["Next.js 16", "TypeScript", "Zod 4", "Tailwind CSS 4", "Vitest", "Docker", "GitHub Actions"]
-description = ""         # left as it is on GitHub
-topics = []
+description = "Config-driven Next.js starter for agency client sites optimised for SEO, AEO and GEO"
+topics = ["nextjs", "typescript", "seo", "structured-data", "json-ld", "schema-org"]
 
 [[projects]]
 slug = "agency-mcp-server"
+tagline = "Eight read-only website-audit tools for MCP clients, with a live playground and 88 tests."   # one line for link previews
 short = "Agency MCP Server"
 glow = "#9b8cff"
 icon = "code"
@@ -236,11 +245,12 @@ highlights = [
   "Search Console and the visibility check run on labelled fixture and mock data until real credentials exist. Visibility rates carry Wilson intervals, and changes are tested with Newcombe intervals against run-to-run variance.",
 ]
 stack = ["TypeScript", "MCP TypeScript SDK", "Zod 4", "Vitest", "Docker", "GitHub Actions"]
-description = ""         # set when the repo was created
-topics = []
+description = "Read-only MCP server for auditing client websites: page audits, structured data, crawler access, Core Web Vitals, crawls, answerability, Search Console and answer-engine visibility"
+topics = ["mcp", "mcp-server", "model-context-protocol", "seo", "structured-data", "typescript", "web-crawler"]
 
 [[projects]]
 slug = "factory-vision"
+tagline = "YOLOv8 scratch and dent detection that runs in your browser. Trained on synthetic images."   # one line for link previews
 short = "Factory Vision"
 glow = "#ff8a4c"
 icon = "scan"
@@ -261,8 +271,8 @@ highlights = [
 stack = ["Python", "YOLOv8", "OpenCV", "Streamlit"]
 images = ["runs/detect/train3/val_batch0_pred.jpg", "runs/detect/train3/confusion_matrix.png"]
 image_alts = ["Validation images with predicted scratch and dent boxes", "Confusion matrix for the scratch and dent classes"]
-description = "YOLOv8 scratch and dent detection with a Streamlit app, trained on synthetic images"
-topics = ["computer-vision", "yolov8", "object-detection", "streamlit", "opencv"]
+description = "YOLOv8 scratch and dent detection with a Streamlit inspection app and an in-browser ONNX demo, trained on synthetic images"
+topics = ["computer-vision", "object-detection", "defect-detection", "yolov8", "onnx", "pytorch", "opencv", "streamlit"]
 
 [[projects]]
 slug = "bolt"

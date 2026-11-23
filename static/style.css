@@ -1,3 +1,5 @@
+@font-face { font-family: "Inter Tight"; font-style: normal; font-weight: 400 600; font-display: swap; src: url(fonts/inter-tight-latin.woff2) format("woff2"); }
+@font-face { font-family: "Caveat"; font-style: normal; font-weight: 500 600; font-display: swap; src: url(fonts/caveat-latin.woff2) format("woff2"); }
 :root {
   --bg: #ffffff;
   --ink: #111111;
@@ -170,6 +172,9 @@ section { padding: 110px 0 40px; }
 .socials a::after { content: attr(data-tip); position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%); color: var(--ink); font-size: .75rem; font-weight: 500; padding: 2px 4px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .2s; }
 .socials a:hover::after, .socials a:focus-visible::after { opacity: 1; }
 footer { padding: 34px 20px 46px; text-align: center; color: var(--body); font-size: .85rem; }
+footer .reach { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; list-style: none; margin: 0 0 14px; padding: 0; }
+footer .reach a { color: var(--ink); font-weight: 500; text-decoration: none; border-bottom: 1px solid var(--line); }
+footer .reach a:hover { border-color: var(--ink); }
 
 /* ---------- project pages ---------- */
 .phero { position: relative; padding: 130px 0 40px; isolation: isolate; overflow: hidden; }
