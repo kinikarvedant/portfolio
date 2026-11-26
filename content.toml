@@ -189,7 +189,7 @@ summary = "A till, kitchen display and time clock for restaurants, cafés and ba
 highlights = [
   "Keeps trading with no internet: each change is saved on the device first, queued, then synced in order and checked by the server. Devices pick up each other's changes as they happen, and a rejected change rolls back with a message instead of vanishing.",
   "Changes from shared tablets are signed per person, with a key derived from their PIN, or from a manager's password for voids, discounts, refunds and timesheet edits. The server re-checks rank and permissions on every write and keeps an append-only audit log.",
-  "Reports run one pure function on the server, the device and in the tests: money in whole cents, business days that survive daylight saving, weekly overtime, and big costs spread over the days they serve. Pay rates and costs are encrypted at rest (AES-256-GCM).",
+  "Reports come from one pure function shared by the app and the tests, and the server recomputes every order total with the same money code: whole cents, business days that survive daylight saving, weekly overtime, and big costs spread over the days they serve. Pay rates and costs are encrypted at rest (AES-256-GCM).",
   "{tests} tests with Node's built-in runner, including end-to-end authorisation checks against a temporary database. The public demo seeds four weeks of made-up trade and rebuilds itself about once an hour.",
 ]
 stack = ["TypeScript", "React 19", "Node.js", "Fastify", "SQLite", "Dexie (IndexedDB)", "PWA", "Zod"]
