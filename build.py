@@ -70,7 +70,11 @@ def facts_factory(p):
             "val_images": len(list((p / "dataset/labels/val").glob("*.txt")))}
 
 
-FACTS = {"melbourne-footfall": facts_melbourne, "smart-traffic-drl": facts_traffic, "factory-vision": facts_factory}
+def facts_shiftab(p):
+    return {"tests": sum(len(re.findall(r"^test\(", f.read_text(encoding="utf-8"), re.M)) for f in (p / "test").glob("*.test.ts"))}
+
+
+FACTS = {"melbourne-footfall": facts_melbourne, "smart-traffic-drl": facts_traffic, "factory-vision": facts_factory, "shiftab": facts_shiftab}
 
 
 def load():

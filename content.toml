@@ -170,6 +170,35 @@ description = "1.6M hourly counts from 102 City of Melbourne sensors: a Metro Tu
 topics = ["data-science", "forecasting", "melbourne", "open-data", "pandas", "scikit-learn", "time-series", "time-series-forecasting", "smart-city", "pedestrian"]
 
 [[projects]]
+slug = "shiftab"
+tagline = "A till, kitchen screen and time clock that keeps working offline and shows each day's profit after wages."   # one line for link previews
+short = "Shiftab"
+glow = "#ff7a45"
+icon = "layout"
+cards = ["docs/screenshots/reports.png", "docs/screenshots/kitchen.png"]
+show = true
+order = 2
+repo = "shiftab"
+path = 'C:\Data\Projects\p0rtal'
+demo = "page"
+# the demo is a second Railway service with DEMO=1 (sample venue, rebuilt about once an hour)
+live = [["Live demo", "https://shiftab-demo-production.up.railway.app"]]
+title = "Shiftab: offline-first POS and labour costs for hospitality"
+kicker = "Solo · Nov 2026 · live demo"
+summary = "A till, kitchen display and time clock for restaurants, cafés and bars that keeps trading when the Wi-Fi drops, and shows each day's revenue against wages and other costs. One TypeScript codebase: an installable React app that works offline on tablets, phones and kitchen TVs, and a Fastify API on SQLite that checks every change before saving it."
+highlights = [
+  "Keeps trading with no internet: each change is saved on the device first, queued, then synced in order and checked by the server. Devices pick up each other's changes as they happen, and a rejected change rolls back with a message instead of vanishing.",
+  "Changes from shared tablets are signed per person, with a key derived from their PIN, or from a manager's password for voids, discounts, refunds and timesheet edits. The server re-checks rank and permissions on every write and keeps an append-only audit log.",
+  "Reports run one pure function on the server, the device and in the tests: money in whole cents, business days that survive daylight saving, weekly overtime, and big costs spread over the days they serve. Pay rates and costs are encrypted at rest (AES-256-GCM).",
+  "{tests} tests with Node's built-in runner, including end-to-end authorisation checks against a temporary database. The public demo seeds four weeks of made-up trade and rebuilds itself about once an hour.",
+]
+stack = ["TypeScript", "React 19", "Node.js", "Fastify", "SQLite", "Dexie (IndexedDB)", "PWA", "Zod"]
+images = ["docs/screenshots/floor.png", "docs/screenshots/kitchen.png", "docs/screenshots/order.png", "docs/screenshots/reports.png", "docs/screenshots/time.png", "docs/screenshots/phone-floor.png"]
+image_alts = ["Floor plan with live table states and running totals", "Kitchen display: tickets turn amber at 8 minutes and red at 12", "Order screen with the kitchen status of each line", "Reports: revenue, wages, labour %, other costs and profit for the week", "Team timesheet for the week", "The floor plan on a phone"]
+description = "Offline-first POS, kitchen display and time clock for restaurants, cafés and bars, with daily labour % and profit after wages and costs. React PWA, Fastify, SQLite. Live demo."
+topics = ["pos", "point-of-sale", "restaurant", "hospitality", "offline-first", "pwa", "react", "typescript", "fastify", "sqlite", "indexeddb", "kitchen-display-system"]
+
+[[projects]]
 slug = "smart-traffic-drl"
 tagline = "A PPO agent runs a simulated intersection and is tested fairly against fixed-time plans over five seeds."   # one line for link previews
 short = "Smart Traffic RL"
@@ -177,7 +206,7 @@ glow = "#5ee08a"
 icon = "signal"
 cards = ["results/figures/ppo_demo.gif", "results/figures/ppo_vs_fixed_time.png"]
 show = true
-order = 2
+order = 3
 repo = "smart-traffic-drl"
 path = 'C:\Data\Projects\smart-traffic-drl'
 demo = "page"            # the repo's demo/ folder (a replay of recorded runs) is published at projects/smart-traffic-drl/demo/
@@ -205,7 +234,7 @@ icon = "layout"
 cards = []
 tiles = ["Dental clinic", "Coffee roaster", "Plumber"]  # the three demo businesses built from config
 show = true
-order = 3
+order = 4
 repo = "seo-geo-starter"
 path = 'C:\Data\Projects\seo-geo-starter'
 demo = "page"
@@ -231,7 +260,7 @@ glow = "#9b8cff"
 icon = "code"
 cards = []
 show = true
-order = 4
+order = 5
 repo = "agency-mcp-server"
 path = 'C:\Data\Projects\agency-mcp-server'
 demo = "page"
@@ -257,7 +286,7 @@ glow = "#ff8a4c"
 icon = "scan"
 cards = ["runs/detect/train3/val_batch0_pred.jpg", "runs/detect/train3/confusion_matrix.png"]
 show = true
-order = 5
+order = 6
 repo = "Factory-Vision"
 path = 'C:\Data\Projects\Factory Vision'
 demo = "page"            # the repo's demo/ folder is published at projects/factory-vision/demo/
@@ -282,7 +311,7 @@ glow = "#c8b6ff"
 icon = "layout"
 cards = []
 show = false             # hidden until the driver data is removed from the public repo
-order = 6
+order = 7
 repo = "Blockchain-based-route-optimization-and-loan-prediction-platform"
 path = ""
 demo = "none"
